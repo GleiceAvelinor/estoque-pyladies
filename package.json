@@ -2,6 +2,10 @@
   "name": "estoque-pyladies-fortaleza",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx serve public"
+  },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "bcryptjs": "^2.4.3"

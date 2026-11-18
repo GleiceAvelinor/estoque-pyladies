@@ -30,8 +30,14 @@
 </head>
 <body class="bg-cangaco-cream text-cangaco-dark min-h-screen font-sans flex flex-col justify-between selection:bg-cangaco-gold selection:text-cangaco-dark">
 
+  <!-- Toast Notification -->
+  <div id="toast" role="status" aria-live="polite" class="fixed top-5 right-5 z-50 transform transition-all duration-300 ease-out translate-y-[-120%] opacity-0 pointer-events-none text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <span id="toast-icon" class="text-lg font-bold"></span>
+    <span id="toast-msg" class="text-sm font-medium"></span>
+  </div>
+
   <!-- TELA DE AUTENTICAÇÃO -->
-  <div id="auth-screen" role="region" aria-label="Área de Autenticação" class="fixed inset-0 bg-cangaco-dark/95 z-50 flex items-center justify-center p-4">
+  <div id="auth-screen" role="region" aria-label="Área de Autenticação" class="fixed inset-0 bg-cangaco-dark/95 z-40 flex items-center justify-center p-4">
     <div class="bg-white max-w-md w-full p-8 rounded-2xl shadow-2xl border border-cangaco-sand space-y-6">
       <div class="text-center space-y-3">
         <div class="w-28 h-28 mx-auto flex items-center justify-center overflow-hidden rounded-full shadow-md bg-white border-2 border-cangaco-gold p-1">
@@ -55,9 +61,9 @@
           <input type="password" id="auth-senha" placeholder="••••••••" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
         </div>
 
-        <div id="auth-erro" role="alert" class="text-xs text-rose-600 font-medium hidden text-center bg-rose-50 p-2 rounded border border-rose-200"></div>
+        <div id="auth-erro" role="alert" class="text-xs text-rose-600 font-medium hidden text-center bg-rose-50 p-2.5 rounded border border-rose-200"></div>
 
-        <button type="submit" id="auth-btn" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold">
+        <button type="submit" id="auth-btn" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-60 disabled:cursor-not-allowed">
           Entrar no Sistema
         </button>
       </form>
@@ -70,13 +76,13 @@
     </div>
   </div>
 
-  
+  <!-- CONTEÚDO PRINCIPAL DO SISTEMA -->
   <div id="app-content" class="hidden flex-1 flex flex-col">
     <header class="bg-cangaco-dark text-cangaco-cream shadow-md" role="banner">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-full overflow-hidden shadow bg-white border-2 border-cangaco-gold p-0.5 flex items-center justify-center">
-            <img src="/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-full h-full object-contain">
+            <img id="header-logo-img" src="/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-full h-full object-contain">
           </div>
           <div>
             <h1 class="text-xl font-bold tracking-tight">PyLadies Fortaleza</h1>
@@ -116,25 +122,29 @@
           <p id="kpi-faturamento" class="text-2xl font-bold text-emerald-700 mt-1">R$ 0,00</p>
         </div>
         <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
-          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Estoque Baixo (< 5)</p>
+          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Estoque Baixo (&lt; 5)</p>
           <p id="kpi-baixo" class="text-2xl font-bold text-rose-700 mt-1">0</p>
         </div>
       </section>
 
       <!-- Formulários -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Registrar Venda -->
         <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
           <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Registrar Nova Venda</h2>
           <form id="form-venda" class="space-y-4" novalidate>
             <div>
               <label for="venda-produto" class="block text-sm font-medium mb-1">Produto</label>
               <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 bg-cangaco-cream/40 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-                <option value="">Carregando...</option>
+                <option value="">Carregando produtos...</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label for="venda-qtd" class="block text-sm font-medium mb-1">Quantidade</label>
+                <div class="flex justify-between items-center mb-1">
+                  <label for="venda-qtd" class="block text-sm font-medium">Quantidade</label>
+                  <span id="venda-disp-badge" class="text-xs text-stone-500 font-medium"></span>
+                </div>
                 <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
               <div>
@@ -151,19 +161,20 @@
               <label for="venda-cliente" class="block text-sm font-medium mb-1">Compradora / Cliente (opcional)</label>
               <input type="text" id="venda-cliente" placeholder="Ex: Maria Silva" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
             </div>
-            <button type="submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold">
+            <button type="submit" id="btn-venda-submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-60 disabled:cursor-not-allowed">
               Confirmar Venda e Abater Estoque
             </button>
           </form>
         </div>
 
+        <!-- Cadastrar Produto -->
         <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
           <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Cadastrar Produto no Estoque</h2>
           <form id="form-produto" class="space-y-4" novalidate>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div class="sm:col-span-2">
                 <label for="prod-nome" class="block text-sm font-medium mb-1">Nome do Produto</label>
-                <input type="text" id="prod-nome" placeholder="Ex: Camisa YCSM" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+                <input type="text" id="prod-nome" placeholder="Ex: Camiseta PyLadies" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
               <div>
                 <label for="prod-tamanho" class="block text-sm font-medium mb-1">Tamanho</label>
@@ -197,7 +208,7 @@
                 <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
             </div>
-            <button type="submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-leather">
+            <button type="submit" id="btn-prod-submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-leather disabled:opacity-60 disabled:cursor-not-allowed">
               Adicionar Produto ao Banco
             </button>
           </form>
@@ -210,7 +221,7 @@
           <h2 class="text-lg font-bold text-cangaco-brown">Estoque Atual</h2>
           <div>
             <label for="busca-produto" class="sr-only">Filtrar produto</label>
-            <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar produto..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+            <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar por nome, categoria ou tam..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none w-64">
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -265,6 +276,40 @@
     let modoAuthAtual = 'login';
     let produtos = [];
     let vendas = [];
+    let toastTimeout = null;
+
+    // Função utilitária para prevenir XSS
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Feedback Visual com Toast
+    function mostrarToast(mensagem, tipo = 'sucesso') {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-msg');
+      const iconEl = document.getElementById('toast-icon');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+
+      msgEl.textContent = mensagem;
+      if (tipo === 'sucesso') {
+        toast.className = 'fixed top-5 right-5 z-50 transform transition-all duration-300 ease-out translate-y-0 opacity-100 bg-emerald-800 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-600';
+        iconEl.textContent = '✓';
+      } else {
+        toast.className = 'fixed top-5 right-5 z-50 transform transition-all duration-300 ease-out translate-y-0 opacity-100 bg-rose-800 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-rose-600';
+        iconEl.textContent = '✕';
+      }
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-[-120%]', 'opacity-0');
+      }, 4000);
+    }
 
     function mudarModoAuth(modo) {
       modoAuthAtual = modo;
@@ -272,17 +317,22 @@
       const subtitulo = document.getElementById('auth-subtitle');
       const campoNome = document.getElementById('campo-nome-div');
       const labelSenha = document.getElementById('label-senha');
+      const senhaInput = document.getElementById('auth-senha');
       const btn = document.getElementById('auth-btn');
       const linkEsqueci = document.getElementById('link-esqueci');
       const linkCadastro = document.getElementById('link-cadastro');
       const linkVoltar = document.getElementById('link-voltar');
-      document.getElementById('auth-erro').classList.add('hidden');
+      const errEl = document.getElementById('auth-erro');
+
+      errEl.classList.add('hidden');
+      senhaInput.value = '';
 
       if (modo === 'login') {
         titulo.textContent = 'PyLadies Fortaleza';
         subtitulo.textContent = 'Entre com sua conta para gerenciar o estoque';
         campoNome.classList.add('hidden');
         labelSenha.textContent = 'Senha';
+        senhaInput.placeholder = '••••••••';
         btn.textContent = 'Entrar no Sistema';
         linkEsqueci.classList.remove('hidden');
         linkCadastro.classList.remove('hidden');
@@ -291,7 +341,8 @@
         titulo.textContent = 'Criar Nova Conta';
         subtitulo.textContent = 'Cadastre-se para acessar o sistema';
         campoNome.classList.remove('hidden');
-        labelSenha.textContent = 'Senha';
+        labelSenha.textContent = 'Senha (mín. 6 caracteres)';
+        senhaInput.placeholder = '••••••••';
         btn.textContent = 'Cadastrar Conta';
         linkEsqueci.classList.add('hidden');
         linkCadastro.classList.add('hidden');
@@ -300,7 +351,8 @@
         titulo.textContent = 'Recuperar Senha';
         subtitulo.textContent = 'Digite seu e-mail e defina uma nova senha';
         campoNome.classList.add('hidden');
-        labelSenha.textContent = 'Nova Senha';
+        labelSenha.textContent = 'Nova Senha (mín. 6 caracteres)';
+        senhaInput.placeholder = 'Digite a nova senha';
         btn.textContent = 'Redefinir Senha';
         linkEsqueci.classList.add('hidden');
         linkCadastro.classList.add('hidden');
@@ -310,15 +362,35 @@
 
     document.getElementById('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('auth-email').value;
+      const email = document.getElementById('auth-email').value.trim();
       const senha = document.getElementById('auth-senha').value;
-      const nome = document.getElementById('auth-nome').value;
+      const nome = document.getElementById('auth-nome').value.trim();
       const errEl = document.getElementById('auth-erro');
+      const btn = document.getElementById('auth-btn');
       errEl.classList.add('hidden');
 
-      let endpointBody = { email, senha };
-      if (modoAuthAtual === 'login') endpointBody.acao = 'login';
-      else if (modoAuthAtual === 'cadastro') {
+      if (!email) {
+        errEl.textContent = 'Por favor, informe seu e-mail.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (modoAuthAtual === 'cadastro' && !nome) {
+        errEl.textContent = 'Por favor, informe seu nome.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!senha || senha.length < 6) {
+        errEl.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const endpointBody = { email, senha };
+      if (modoAuthAtual === 'login') {
+        endpointBody.acao = 'login';
+      } else if (modoAuthAtual === 'cadastro') {
         endpointBody.acao = 'cadastro';
         endpointBody.nome = nome;
       } else if (modoAuthAtual === 'esqueci') {
@@ -326,17 +398,21 @@
         endpointBody.novaSenha = senha;
       }
 
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+
       try {
         const res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(endpointBody)
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro na autenticação');
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro na autenticação.');
 
         if (modoAuthAtual === 'esqueci') {
-          alert('Senha redefinida com sucesso! Faça login com a nova senha.');
+          mostrarToast('Senha redefinida com sucesso! Faça login.');
           mudarModoAuth('login');
           return;
         }
@@ -346,28 +422,48 @@
       } catch (err) {
         errEl.textContent = err.message;
         errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
       }
     });
 
     function verificarSessao() {
       const salvo = localStorage.getItem('pyladies_user');
-      if (salvo) iniciarApp(JSON.parse(salvo));
+      if (salvo) {
+        try {
+          const user = JSON.parse(salvo);
+          if (user && user.nome) {
+            iniciarApp(user);
+          } else {
+            fazerLogout();
+          }
+        } catch (e) {
+          fazerLogout();
+        }
+      }
     }
 
     function fazerLogout() {
       localStorage.removeItem('pyladies_user');
+      produtos = [];
+      vendas = [];
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('auth-screen').classList.remove('hidden');
+      mudarModoAuth('login');
     }
 
     function iniciarApp(user) {
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
-      document.getElementById('user-logado-nome').textContent = user.nome;
+      document.getElementById('user-logado-nome').textContent = user.nome || 'Usuária';
       carregarDados();
     }
 
-    const formatarMoeda = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const formatarMoeda = (v) => {
+      const num = Number(v) || 0;
+      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
 
     async function carregarDados() {
       try {
@@ -375,11 +471,25 @@
           fetch('/api/produtos'),
           fetch('/api/vendas')
         ]);
-        produtos = await resProd.json();
-        vendas = await resVendas.json();
+
+        if (!resProd.ok) {
+          const errP = await resProd.json().catch(() => ({}));
+          throw new Error(errP.error || 'Falha ao buscar produtos no banco.');
+        }
+        if (!resVendas.ok) {
+          const errV = await resVendas.json().catch(() => ({}));
+          throw new Error(errV.error || 'Falha ao buscar histórico de vendas.');
+        }
+
+        const dataProd = await resProd.json();
+        const dataVendas = await resVendas.json();
+
+        produtos = Array.isArray(dataProd) ? dataProd : [];
+        vendas = Array.isArray(dataVendas) ? dataVendas : [];
         renderizarTudo();
       } catch (err) {
-        console.error('Erro ao carregar dados', err);
+        console.error('Erro ao carregar dados:', err);
+        mostrarToast(err.message, 'erro');
       }
     }
 
@@ -391,10 +501,10 @@
     }
 
     function renderizarKPIs() {
-      const totalItens = produtos.reduce((acc, p) => acc + Number(p.estoque), 0);
-      const valorEstoque = produtos.reduce((acc, p) => acc + (Number(p.preco) * Number(p.estoque)), 0);
-      const faturamento = vendas.reduce((acc, v) => acc + Number(v.valor_total), 0);
-      const baixo = produtos.filter(p => Number(p.estoque) < 5).length;
+      const totalItens = produtos.reduce((acc, p) => acc + (Number(p.estoque) || 0), 0);
+      const valorEstoque = produtos.reduce((acc, p) => acc + ((Number(p.preco) || 0) * (Number(p.estoque) || 0)), 0);
+      const faturamento = vendas.reduce((acc, v) => acc + (Number(v.valor_total) || 0), 0);
+      const baixo = produtos.filter(p => (Number(p.estoque) || 0) < 5).length;
 
       document.getElementById('kpi-estoque').textContent = totalItens;
       document.getElementById('kpi-valor-estoque').textContent = formatarMoeda(valorEstoque);
@@ -404,125 +514,319 @@
 
     function renderizarSelectProdutos() {
       const select = document.getElementById('venda-produto');
-      select.innerHTML = produtos.map(p => `
-        <option value="${p.id}" ${p.estoque <= 0 ? 'disabled' : ''}>
-          ${p.nome} - Tam ${p.tamanho} (${formatarMoeda(p.preco)}) • Disp: ${p.estoque}
-        </option>
-      `).join('');
+      const badgeDisp = document.getElementById('venda-disp-badge');
+      badgeDisp.textContent = '';
+
+      if (!produtos || produtos.length === 0) {
+        select.innerHTML = '<option value="" disabled selected>Nenhum produto cadastrado</option>';
+        return;
+      }
+
+      let options = '<option value="" disabled selected>Selecione um produto...</option>';
+      produtos.forEach(p => {
+        const esgotado = (Number(p.estoque) || 0) <= 0;
+        options += `
+          <option value="${p.id}" ${esgotado ? 'disabled' : ''}>
+            ${escapeHTML(p.nome)} - Tam: ${escapeHTML(p.tamanho)} (${formatarMoeda(p.preco)}) • ${esgotado ? 'ESGOTADO' : `Disp: ${p.estoque}`}
+          </option>
+        `;
+      });
+      select.innerHTML = options;
     }
 
-    function renderizarProdutos() {
-      const filtro = document.getElementById('busca-produto').value.toLowerCase();
-      const tbody = document.getElementById('tabela-produtos');
-      const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(filtro) || p.tamanho.toLowerCase().includes(filtro));
+    // Monitora seleção de produto para ajustar limites de quantidade
+    document.getElementById('venda-produto').addEventListener('change', (e) => {
+      const prodId = Number(e.target.value);
+      const prod = produtos.find(p => p.id === prodId);
+      const qtdInput = document.getElementById('venda-qtd');
+      const badgeDisp = document.getElementById('venda-disp-badge');
 
-      tbody.innerHTML = filtrados.map(p => `
-        <tr class="hover:bg-cangaco-cream/50">
-          <td class="px-4 py-3 font-medium">${p.nome}</td>
-          <td class="px-4 py-3 text-stone-600">${p.categoria}</td>
-          <td class="px-4 py-3"><span class="px-2 py-0.5 rounded bg-cangaco-sand text-cangaco-dark font-semibold text-xs">${p.tamanho}</span></td>
-          <td class="px-4 py-3">${formatarMoeda(p.preco)}</td>
-          <td class="px-4 py-3 font-bold ${p.estoque < 5 ? 'text-rose-600' : 'text-emerald-700'}">${p.estoque} un.</td>
-          <td class="px-4 py-3 text-right space-x-1">
-            <button onclick="ajustarEstoque(${p.id}, ${Number(p.estoque) + 1})" aria-label="Aumentar estoque de ${p.nome}" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold focus:ring-1 focus:ring-stone-600">+1</button>
-            <button onclick="ajustarEstoque(${p.id}, ${Math.max(0, Number(p.estoque) - 1)})" aria-label="Diminuir estoque de ${p.nome}" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold focus:ring-1 focus:ring-stone-600">-1</button>
-            <button onclick="excluirProduto(${p.id})" aria-label="Excluir produto ${p.nome}" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs focus:ring-1 focus:ring-rose-500">Excluir</button>
-          </td>
-        </tr>
-      `).join('');
+      if (prod) {
+        const disponivel = Number(prod.estoque) || 0;
+        badgeDisp.textContent = `Disp: ${disponivel} un.`;
+        qtdInput.max = disponivel;
+        if (Number(qtdInput.value) > disponivel) {
+          qtdInput.value = Math.max(1, disponivel);
+        }
+      } else {
+        badgeDisp.textContent = '';
+        qtdInput.removeAttribute('max');
+      }
+    });
+
+    function renderizarProdutos() {
+      const filtro = (document.getElementById('busca-produto').value || '').trim().toLowerCase();
+      const tbody = document.getElementById('tabela-produtos');
+
+      const filtrados = produtos.filter(p => {
+        const nomeMatch = p.nome ? p.nome.toLowerCase().includes(filtro) : false;
+        const tamMatch = p.tamanho ? p.tamanho.toLowerCase().includes(filtro) : false;
+        const catMatch = p.categoria ? p.categoria.toLowerCase().includes(filtro) : false;
+        return nomeMatch || tamMatch || catMatch;
+      });
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">
+              ${produtos.length === 0 ? 'Nenhum produto cadastrado no estoque ainda.' : 'Nenhum produto corresponde ao filtro.'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtrados.map(p => {
+        const estoque = Number(p.estoque) || 0;
+        const preco = Number(p.preco) || 0;
+        return `
+          <tr class="hover:bg-cangaco-cream/50 transition-colors">
+            <td class="px-4 py-3 font-medium">${escapeHTML(p.nome)}</td>
+            <td class="px-4 py-3 text-stone-600">${escapeHTML(p.categoria)}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded bg-cangaco-sand text-cangaco-dark font-semibold text-xs">
+                ${escapeHTML(p.tamanho)}
+              </span>
+            </td>
+            <td class="px-4 py-3">${formatarMoeda(preco)}</td>
+            <td class="px-4 py-3 font-bold ${estoque <= 0 ? 'text-rose-700' : estoque < 5 ? 'text-amber-600' : 'text-emerald-700'}">
+              ${estoque <= 0 ? 'ESGOTADO' : `${estoque} un.`}
+            </td>
+            <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+              <button onclick="ajustarEstoque(${p.id}, 1)" title="Aumentar estoque em 1" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold transition focus:ring-1 focus:ring-stone-600">+1</button>
+              <button onclick="ajustarEstoque(${p.id}, -1)" title="Diminuir estoque em 1" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold transition focus:ring-1 focus:ring-stone-600" ${estoque <= 0 ? 'disabled' : ''}>-1</button>
+              <button onclick="excluirProduto(${p.id})" title="Excluir produto" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-semibold transition focus:ring-1 focus:ring-rose-500">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderizarVendas() {
       const tbody = document.getElementById('tabela-vendas');
-      tbody.innerHTML = vendas.map(v => `
-        <tr class="hover:bg-cangaco-cream/50">
-          <td class="px-4 py-3 text-stone-600">${new Date(v.data_venda).toLocaleString('pt-BR')}</td>
-          <td class="px-4 py-3 font-medium">${v.produto_nome}</td>
-          <td class="px-4 py-3">${v.quantidade}</td>
-          <td class="px-4 py-3 font-semibold text-emerald-700">${formatarMoeda(v.valor_total)}</td>
-          <td class="px-4 py-3">${v.pagamento}</td>
-          <td class="px-4 py-3 text-stone-600">${v.cliente}</td>
-        </tr>
-      `).join('');
+
+      if (!vendas || vendas.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">
+              Nenhuma venda registrada ainda.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = vendas.map(v => {
+        const dataFormatada = v.data_venda ? new Date(v.data_venda).toLocaleString('pt-BR') : '-';
+        return `
+          <tr class="hover:bg-cangaco-cream/50 transition-colors">
+            <td class="px-4 py-3 text-stone-600 whitespace-nowrap">${escapeHTML(dataFormatada)}</td>
+            <td class="px-4 py-3 font-medium">${escapeHTML(v.produto_nome)}</td>
+            <td class="px-4 py-3">${Number(v.quantidade) || 0}</td>
+            <td class="px-4 py-3 font-semibold text-emerald-700">${formatarMoeda(v.valor_total)}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded bg-cangaco-sand/80 text-cangaco-dark text-xs font-medium">
+                ${escapeHTML(v.pagamento)}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-stone-600">${escapeHTML(v.cliente || 'Não informado')}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    // Formulário de Cadastro de Produto
     document.getElementById('form-produto').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await fetch('/api/produtos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: document.getElementById('prod-nome').value,
-          categoria: document.getElementById('prod-categoria').value,
-          tamanho: document.getElementById('prod-tamanho').value,
-          preco: document.getElementById('prod-preco').value,
-          estoque: document.getElementById('prod-estoque').value
-        })
-      });
-      e.target.reset();
-      await carregarDados();
+      const nome = document.getElementById('prod-nome').value.trim();
+      const categoria = document.getElementById('prod-categoria').value;
+      const tamanho = document.getElementById('prod-tamanho').value;
+      const precoStr = document.getElementById('prod-preco').value;
+      const estoqueStr = document.getElementById('prod-estoque').value;
+      const btn = document.getElementById('btn-prod-submit');
+
+      if (!nome) {
+        mostrarToast('Por favor, informe o nome do produto.', 'erro');
+        return;
+      }
+
+      const preco = parseFloat(String(precoStr).replace(',', '.'));
+      if (isNaN(preco) || preco < 0) {
+        mostrarToast('Informe um preço válido.', 'erro');
+        return;
+      }
+
+      const estoque = parseInt(estoqueStr, 10);
+      if (isNaN(estoque) || estoque < 0) {
+        mostrarToast('Informe uma quantidade de estoque válida maior ou igual a zero.', 'erro');
+        return;
+      }
+
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Salvando produto...';
+
+      try {
+        const res = await fetch('/api/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, categoria, tamanho, preco, estoque })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar produto.');
+
+        e.target.reset();
+        document.getElementById('prod-estoque').value = '10';
+        document.getElementById('prod-tamanho').value = 'G';
+        await carregarDados();
+        mostrarToast('Produto cadastrado com sucesso!');
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
     });
 
+    // Formulário de Registro de Venda
     document.getElementById('form-venda').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const res = await fetch('/api/vendas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          produto_id: document.getElementById('venda-produto').value,
-          quantidade: document.getElementById('venda-qtd').value,
-          pagamento: document.getElementById('venda-pagamento').value,
-          cliente: document.getElementById('venda-cliente').value
-        })
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Erro ao registrar venda');
+      const produtoId = document.getElementById('venda-produto').value;
+      const qtd = parseInt(document.getElementById('venda-qtd').value, 10);
+      const pagamento = document.getElementById('venda-pagamento').value;
+      const cliente = document.getElementById('venda-cliente').value.trim();
+      const btn = document.getElementById('btn-venda-submit');
+
+      if (!produtoId) {
+        mostrarToast('Selecione um produto da lista.', 'erro');
+        return;
       }
-      e.target.reset();
-      await carregarDados();
+
+      if (!qtd || isNaN(qtd) || qtd <= 0) {
+        mostrarToast('Informe uma quantidade válida maior que zero.', 'erro');
+        return;
+      }
+
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Registrando venda...';
+
+      try {
+        const res = await fetch('/api/vendas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            produto_id: produtoId,
+            quantidade: qtd,
+            pagamento,
+            cliente
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao registrar venda.');
+
+        e.target.reset();
+        document.getElementById('venda-qtd').value = '1';
+        document.getElementById('venda-disp-badge').textContent = '';
+        await carregarDados();
+        mostrarToast('Venda registrada e estoque atualizado com sucesso!');
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
     });
 
-    async function ajustarEstoque(id, novoEstoque) {
-      await fetch('/api/produtos', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, estoque: novoEstoque })
-      });
-      await carregarDados();
+    // Ajustar estoque via delta atômico
+    async function ajustarEstoque(id, delta) {
+      try {
+        const res = await fetch('/api/produtos', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, delta })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao atualizar estoque.');
+
+        await carregarDados();
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
     }
 
+    // Excluir produto com confirmação e tratamento de erros
     async function excluirProduto(id) {
-      if (!confirm('Deseja realmente excluir este item?')) return;
-      await fetch(`/api/produtos?id=${id}`, { method: 'DELETE' });
-      await carregarDados();
+      const prod = produtos.find(p => p.id === id);
+      const nomeProd = prod ? prod.nome : 'este produto';
+
+      if (!confirm(`Deseja realmente excluir "${nomeProd}" do estoque?`)) return;
+
+      try {
+        const res = await fetch(`/api/produtos?id=${id}`, { method: 'DELETE' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao excluir o produto.');
+
+        await carregarDados();
+        mostrarToast('Produto excluído com sucesso!');
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
     }
 
-    // EXPORTAÇÃO CSV ESTOQUE
+    // Escape de células CSV RFC 4180
+    function escapeCSV(valor) {
+      if (valor === null || valor === undefined) return '""';
+      const str = String(valor).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+
+    // Exportação CSV Estoque
     function exportarCSVEstoque() {
+      if (produtos.length === 0) {
+        mostrarToast('Não há produtos cadastrados para exportar.', 'erro');
+        return;
+      }
       const linhas = [['ID', 'Produto', 'Categoria', 'Tamanho', 'Preco_Unitario', 'Estoque_Atual', 'Valor_Total_Estoque']];
       produtos.forEach(p => {
-        const total = (Number(p.preco) * Number(p.estoque)).toFixed(2);
-        linhas.push([p.id, `"${p.nome}"`, `"${p.categoria}"`, p.tamanho, Number(p.preco).toFixed(2), p.estoque, total]);
+        const preco = Number(p.preco) || 0;
+        const estoque = Number(p.estoque) || 0;
+        const total = (preco * estoque).toFixed(2);
+        linhas.push([
+          p.id,
+          escapeCSV(p.nome),
+          escapeCSV(p.categoria),
+          escapeCSV(p.tamanho),
+          preco.toFixed(2),
+          estoque,
+          total
+        ]);
       });
       baixarCSV(linhas, 'estoque_pyladies_fortaleza.csv');
+      mostrarToast('Planilha de estoque exportada!');
     }
 
-    // EXPORTAÇÃO CSV VENDAS
+    // Exportação CSV Vendas
     function exportarCSVVendas() {
+      if (vendas.length === 0) {
+        mostrarToast('Não há vendas registradas para exportar.', 'erro');
+        return;
+      }
       const linhas = [['ID_Venda', 'Data', 'Produto', 'Quantidade', 'Valor_Total', 'Pagamento', 'Cliente']];
       vendas.forEach(v => {
+        const dataFormatada = v.data_venda ? new Date(v.data_venda).toLocaleString('pt-BR') : '-';
         linhas.push([
           v.id,
-          new Date(v.data_venda).toLocaleString('pt-BR'),
-          `"${v.produto_nome}"`,
-          v.quantidade,
-          Number(v.valor_total).toFixed(2),
-          v.pagamento,
-          `"${v.cliente}"`
+          escapeCSV(dataFormatada),
+          escapeCSV(v.produto_nome),
+          Number(v.quantidade) || 0,
+          (Number(v.valor_total) || 0).toFixed(2),
+          escapeCSV(v.pagamento),
+          escapeCSV(v.cliente || 'Não informado')
         ]);
       });
       baixarCSV(linhas, 'vendas_pyladies_fortaleza.csv');
+      mostrarToast('Histórico de vendas exportado!');
     }
 
     function baixarCSV(linhas, nomeArquivo) {
@@ -535,24 +839,32 @@
       document.body.appendChild(link);
       link.click();
       link.remove();
+      URL.revokeObjectURL(url);
     }
 
-    // EXPORTAÇÃO PDF CONSOLIDADO
+    // Exportação PDF Consolidado
     function exportarPDF() {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        mostrarToast('Biblioteca PDF ainda carregando. Aguarde alguns instantes.', 'erro');
+        return;
+      }
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
+      // Barra superior personalizada
       doc.setFillColor(61, 21, 8);
       doc.rect(0, 0, 210, 32, 'F');
 
-      const imgLogo = document.getElementById('logo-img');
-      if (imgLogo && imgLogo.complete) {
+      // Embutir logo se disponível no DOM
+      const headerLogo = document.getElementById('header-logo-img') || document.getElementById('logo-img');
+      if (headerLogo && headerLogo.complete && headerLogo.naturalWidth > 0) {
         try {
           doc.setFillColor(255, 255, 255);
           doc.circle(22, 16, 11, 'F');
-          doc.addImage(imgLogo, 'PNG', 12, 6, 20, 20);
+          doc.addImage(headerLogo, 'PNG', 12, 6, 20, 20);
         } catch (e) {
-          console.warn('Erro ao embutir logo no PDF:', e);
+          console.warn('Aviso ao embutir logo no PDF:', e);
         }
       }
 
@@ -566,40 +878,55 @@
       doc.setFontSize(12);
       doc.text('1. Inventário Atual', 14, 42);
 
+      const linhasProdutos = produtos.length > 0 ? produtos.map(p => [
+        p.nome || '-',
+        p.categoria || '-',
+        p.tamanho || '-',
+        formatarMoeda(p.preco),
+        p.estoque ?? 0,
+        formatarMoeda((Number(p.preco) || 0) * (Number(p.estoque) || 0))
+      ]) : [['Nenhum produto cadastrado no momento', '-', '-', '-', '-', '-']];
+
       doc.autoTable({
         startY: 46,
         head: [['Produto', 'Categoria', 'Tam.', 'Preço', 'Qtd.', 'Total']],
-        body: produtos.map(p => [
-          p.nome,
-          p.categoria,
-          p.tamanho,
-          formatarMoeda(p.preco),
-          p.estoque,
-          formatarMoeda(Number(p.preco) * Number(p.estoque))
-        ]),
-        headStyles: { fillColor: [107, 52, 16] }
+        body: linhasProdutos,
+        headStyles: { fillColor: [107, 52, 16] },
+        theme: 'striped'
       });
 
-      const finalY = doc.lastAutoTable.finalY + 12;
+      let finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 50) + 12;
+      if (finalY > 250) {
+        doc.addPage();
+        finalY = 20;
+      }
+
+      doc.setTextColor(61, 21, 8);
+      doc.setFontSize(12);
       doc.text('2. Histórico de Vendas', 14, finalY);
+
+      const linhasVendas = vendas.length > 0 ? vendas.map(v => [
+        v.data_venda ? new Date(v.data_venda).toLocaleDateString('pt-BR') : '-',
+        v.produto_nome || '-',
+        v.quantidade ?? 0,
+        formatarMoeda(v.valor_total),
+        v.pagamento || '-',
+        v.cliente || '-'
+      ]) : [['Nenhuma venda registrada até o momento', '-', '-', '-', '-', '-']];
 
       doc.autoTable({
         startY: finalY + 4,
         head: [['Data', 'Produto', 'Qtd', 'Total', 'Pagamento', 'Cliente']],
-        body: vendas.map(v => [
-          new Date(v.data_venda).toLocaleDateString('pt-BR'),
-          v.produto_nome,
-          v.quantidade,
-          formatarMoeda(v.valor_total),
-          v.pagamento,
-          v.cliente
-        ]),
-        headStyles: { fillColor: [139, 69, 19] }
+        body: linhasVendas,
+        headStyles: { fillColor: [139, 69, 19] },
+        theme: 'striped'
       });
 
       doc.save('relatorio_pyladies_fortaleza.pdf');
+      mostrarToast('Relatório PDF gerado com sucesso!');
     }
 
+    // Inicialização da verificação de sessão
     verificarSessao();
   </script>
 </body>
