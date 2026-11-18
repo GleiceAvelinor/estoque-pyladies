@@ -174,7 +174,7 @@
               <span class="text-lg">🏷️</span>
             </div>
             <p id="kpi-valor-estoque" class="text-2xl font-bold mt-2">R$ 0,00</p>
-            <p class="text-[11px] text-stone-500 mt-1">Patrimônio estimado em produtos</p>
+            <p id="kpi-sub-estoque" class="text-[11px] text-stone-500 mt-1">Custo: R$ 0,00 • Lucro Previsto: R$ 0,00</p>
           </div>
 
           <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
@@ -183,7 +183,7 @@
               <span class="text-lg">💰</span>
             </div>
             <p id="kpi-faturamento" class="text-2xl font-bold text-emerald-700 mt-2">R$ 0,00</p>
-            <p class="text-[11px] text-stone-500 mt-1">Total arrecadado em vendas</p>
+            <p id="kpi-sub-faturamento" class="text-[11px] text-stone-500 mt-1">Total arrecadado em vendas</p>
           </div>
 
           <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
@@ -359,7 +359,9 @@
                   <th scope="col" class="px-4 py-3">Produto</th>
                   <th scope="col" class="px-4 py-3">Categoria</th>
                   <th scope="col" class="px-4 py-3">Tamanho</th>
-                  <th scope="col" class="px-4 py-3">Preço Unitário</th>
+                  <th scope="col" class="px-4 py-3">Preço Custo</th>
+                  <th scope="col" class="px-4 py-3">Preço Venda</th>
+                  <th scope="col" class="px-4 py-3">Margem / Lucro</th>
                   <th scope="col" class="px-4 py-3">Estoque</th>
                   <th scope="col" class="px-4 py-3 text-right">Ações Rápidas</th>
                 </tr>
@@ -456,13 +458,20 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="prod-preco" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Preço (R$) *</label>
-            <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+            <label for="prod-preco-custo" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Preço de Custo (R$)</label>
+            <input type="number" id="prod-preco-custo" step="0.01" min="0" placeholder="25.00" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+            <span class="text-[10px] text-stone-500">Valor de compra/produção</span>
           </div>
           <div>
-            <label for="prod-estoque" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Estoque Inicial *</label>
-            <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+            <label for="prod-preco" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Preço de Venda (R$) *</label>
+            <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+            <span class="text-[10px] text-stone-500">Valor cobrado na venda</span>
           </div>
+        </div>
+
+        <div>
+          <label for="prod-estoque" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Estoque Inicial *</label>
+          <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
         </div>
 
         <div class="pt-3 border-t border-stone-200 flex justify-end gap-2">
@@ -802,13 +811,30 @@
 
     function renderizarKPIs() {
       const totalItens = produtos.reduce((acc, p) => acc + (Number(p.estoque) || 0), 0);
-      const valorEstoque = produtos.reduce((acc, p) => acc + ((Number(p.preco) || 0) * (Number(p.estoque) || 0)), 0);
+      const valorVendaEstoque = produtos.reduce((acc, p) => acc + ((Number(p.preco) || 0) * (Number(p.estoque) || 0)), 0);
+      const valorCustoEstoque = produtos.reduce((acc, p) => acc + ((Number(p.preco_custo) || 0) * (Number(p.estoque) || 0)), 0);
+      const lucroPotencial = Math.max(0, valorVendaEstoque - valorCustoEstoque);
+
       const faturamento = vendas.reduce((acc, v) => acc + (Number(v.valor_total) || 0), 0);
+      const custoTotalVendas = vendas.reduce((acc, v) => {
+        const custoUnit = Number(v.preco_custo) || 0;
+        const qtd = Number(v.quantidade) || 0;
+        return acc + (custoUnit * qtd);
+      }, 0);
+      const lucroRealizado = faturamento - custoTotalVendas;
       const baixo = produtos.filter(p => (Number(p.estoque) || 0) < 5).length;
 
       document.getElementById('kpi-estoque').textContent = totalItens;
-      document.getElementById('kpi-valor-estoque').textContent = formatarMoeda(valorEstoque);
+      document.getElementById('kpi-valor-estoque').textContent = formatarMoeda(valorVendaEstoque);
+      const subEstoque = document.getElementById('kpi-sub-estoque');
+      if (subEstoque) {
+        subEstoque.textContent = `Custo: ${formatarMoeda(valorCustoEstoque)} • Lucro: ${formatarMoeda(lucroPotencial)}`;
+      }
       document.getElementById('kpi-faturamento').textContent = formatarMoeda(faturamento);
+      const subFaturamento = document.getElementById('kpi-sub-faturamento');
+      if (subFaturamento) {
+        subFaturamento.textContent = `Lucro Realizado: ${formatarMoeda(lucroRealizado)}`;
+      }
       document.getElementById('kpi-baixo').textContent = baixo;
     }
 
@@ -925,7 +951,7 @@
       if (filtrados.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">
+            <td colspan="8" class="px-4 py-8 text-center text-stone-500 font-medium">
               ${produtos.length === 0 ? 'Nenhum produto cadastrado no estoque ainda.' : 'Nenhum produto corresponde aos filtros aplicados.'}
             </td>
           </tr>
@@ -936,6 +962,10 @@
       tbody.innerHTML = filtrados.map(p => {
         const estoque = Number(p.estoque) || 0;
         const preco = Number(p.preco) || 0;
+        const precoCusto = Number(p.preco_custo) || 0;
+        const lucroUnitario = preco - precoCusto;
+        const margemPct = preco > 0 ? Math.round((lucroUnitario / preco) * 100) : 0;
+
         return `
           <tr class="hover:bg-cangaco-cream/50 transition-colors">
             <td class="px-4 py-3 font-medium text-stone-900">${escapeHTML(p.nome)}</td>
@@ -945,7 +975,16 @@
                 ${escapeHTML(p.tamanho)}
               </span>
             </td>
+            <td class="px-4 py-3 text-stone-600 text-xs">${precoCusto > 0 ? formatarMoeda(precoCusto) : '<span class="text-stone-400">R$ 0,00</span>'}</td>
             <td class="px-4 py-3 font-semibold text-stone-800">${formatarMoeda(preco)}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center gap-1 font-semibold text-xs ${lucroUnitario >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+                ${lucroUnitario >= 0 ? '+' : ''}${formatarMoeda(lucroUnitario)}
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${lucroUnitario >= 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">
+                  ${margemPct}%
+                </span>
+              </span>
+            </td>
             <td class="px-4 py-3">
               <span class="font-bold text-xs px-2.5 py-1 rounded-full ${estoque <= 0 ? 'bg-rose-100 text-rose-700' : estoque < 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
                 ${estoque <= 0 ? 'ESGOTADO' : `${estoque} un.`}
@@ -1005,13 +1044,18 @@
       const nome = document.getElementById('prod-nome').value.trim();
       const categoria = document.getElementById('prod-categoria').value;
       const tamanho = document.getElementById('prod-tamanho').value;
+      const precoCustoStr = document.getElementById('prod-preco-custo').value;
       const precoStr = document.getElementById('prod-preco').value;
       const estoqueStr = document.getElementById('prod-estoque').value;
       const btn = document.getElementById('btn-prod-submit');
 
       if (!nome) return mostrarToast('Informe o nome do produto.', 'erro');
       const preco = parseFloat(String(precoStr).replace(',', '.'));
-      if (isNaN(preco) || preco < 0) return mostrarToast('Informe um preço válido.', 'erro');
+      if (isNaN(preco) || preco < 0) return mostrarToast('Informe um preço de venda válido.', 'erro');
+      
+      const precoCusto = precoCustoStr ? parseFloat(String(precoCustoStr).replace(',', '.')) : 0;
+      if (isNaN(precoCusto) || precoCusto < 0) return mostrarToast('Informe um preço de custo válido.', 'erro');
+
       const estoque = parseInt(estoqueStr, 10);
       if (isNaN(estoque) || estoque < 0) return mostrarToast('Informe um estoque válido.', 'erro');
 
@@ -1023,7 +1067,7 @@
         const res = await fetch('/api/produtos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, categoria, tamanho, preco, estoque })
+          body: JSON.stringify({ nome, categoria, tamanho, preco, preco_custo: precoCusto, estoque })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar produto.');
@@ -1031,6 +1075,7 @@
         e.target.reset();
         document.getElementById('prod-estoque').value = '10';
         document.getElementById('prod-tamanho').value = 'G';
+        document.getElementById('prod-preco-custo').value = '';
         fecharModalProduto();
         await carregarDados();
         mostrarToast('Produto cadastrado com sucesso!');
@@ -1245,11 +1290,24 @@
 
     function exportarCSVEstoque() {
       if (produtos.length === 0) return mostrarToast('Não há produtos para exportar.', 'erro');
-      const linhas = [['ID', 'Produto', 'Categoria', 'Tamanho', 'Preco_Unitario', 'Estoque_Atual', 'Valor_Total_Estoque']];
+      const linhas = [['ID', 'Produto', 'Categoria', 'Tamanho', 'Preco_Custo', 'Preco_Venda', 'Margem_Unitaria', 'Estoque_Atual', 'Total_Custo', 'Total_Venda']];
       produtos.forEach(p => {
         const preco = Number(p.preco) || 0;
+        const precoCusto = Number(p.preco_custo) || 0;
+        const lucroUnitario = preco - precoCusto;
         const estoque = Number(p.estoque) || 0;
-        linhas.push([p.id, escapeCSV(p.nome), escapeCSV(p.categoria), escapeCSV(p.tamanho), preco.toFixed(2), estoque, (preco * estoque).toFixed(2)]);
+        linhas.push([
+          p.id, 
+          escapeCSV(p.nome), 
+          escapeCSV(p.categoria), 
+          escapeCSV(p.tamanho), 
+          precoCusto.toFixed(2), 
+          preco.toFixed(2), 
+          lucroUnitario.toFixed(2), 
+          estoque, 
+          (precoCusto * estoque).toFixed(2), 
+          (preco * estoque).toFixed(2)
+        ]);
       });
       baixarCSV(linhas, 'estoque_pyladies_fortaleza.csv');
       mostrarToast('Planilha de estoque exportada!');
@@ -1310,14 +1368,15 @@
         p.nome || '-',
         p.categoria || '-',
         p.tamanho || '-',
+        formatarMoeda(p.preco_custo),
         formatarMoeda(p.preco),
         p.estoque ?? 0,
         formatarMoeda((Number(p.preco) || 0) * (Number(p.estoque) || 0))
-      ]) : [['Nenhum produto cadastrado', '-', '-', '-', '-', '-']];
+      ]) : [['Nenhum produto cadastrado', '-', '-', '-', '-', '-', '-']];
 
       doc.autoTable({
         startY: 46,
-        head: [['Produto', 'Categoria', 'Tam.', 'Preço', 'Qtd.', 'Total']],
+        head: [['Produto', 'Categoria', 'Tam.', 'Custo', 'Venda', 'Qtd.', 'Total Venda']],
         body: linhasProdutos,
         headStyles: { fillColor: [107, 52, 16] },
         theme: 'striped'

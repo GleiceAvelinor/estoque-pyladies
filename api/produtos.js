@@ -7,6 +7,9 @@ export default async function handler(req, res) {
 
   const sql = neon(process.env.DATABASE_URL);
 
+  // Auto-migração: adiciona coluna preco_custo se não existir
+  await sql`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2) NOT NULL DEFAULT 0.00`;
+
   try {
     if (req.method === 'GET') {
       const produtos = await sql`SELECT * FROM produtos ORDER BY nome ASC, tamanho ASC`;
@@ -14,12 +17,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { nome, categoria, tamanho, preco, estoque } = req.body || {};
+      const { nome, categoria, tamanho, preco, preco_custo, estoque } = req.body || {};
 
       const nomeLimpo = nome ? String(nome).trim() : '';
       const categoriaLimpa = categoria ? String(categoria).trim() : 'Outros';
       const tamanhoLimpo = tamanho ? String(tamanho).trim() : 'Único';
       const precoNum = Number(String(preco ?? '').replace(',', '.'));
+      const precoCustoNum = Number(String(preco_custo ?? '0').replace(',', '.'));
       const estoqueNum = Number(estoque);
 
       if (!nomeLimpo) {
@@ -28,20 +32,23 @@ export default async function handler(req, res) {
       if (isNaN(precoNum) || precoNum < 0) {
         return res.status(400).json({ error: 'O preço informado é inválido.' });
       }
+      if (isNaN(precoCustoNum) || precoCustoNum < 0) {
+        return res.status(400).json({ error: 'O preço de custo informado é inválido.' });
+      }
       if (isNaN(estoqueNum) || estoqueNum < 0 || !Number.isInteger(estoqueNum)) {
         return res.status(400).json({ error: 'A quantidade em estoque deve ser um número inteiro maior ou igual a zero.' });
       }
 
       const [novo] = await sql`
-        INSERT INTO produtos (nome, categoria, tamanho, preco, estoque)
-        VALUES (${nomeLimpo}, ${categoriaLimpa}, ${tamanhoLimpo}, ${precoNum}, ${estoqueNum})
+        INSERT INTO produtos (nome, categoria, tamanho, preco, preco_custo, estoque)
+        VALUES (${nomeLimpo}, ${categoriaLimpa}, ${tamanhoLimpo}, ${precoNum}, ${precoCustoNum}, ${estoqueNum})
         RETURNING *
       `;
       return res.status(201).json(novo);
     }
 
     if (req.method === 'PUT') {
-      const { id, estoque, delta } = req.body || {};
+      const { id, estoque, delta, preco, preco_custo } = req.body || {};
       const idNum = Number(id);
 
       if (!id || isNaN(idNum)) {
@@ -61,9 +68,9 @@ export default async function handler(req, res) {
           RETURNING *
         `;
         atualizado = rows[0];
-      } else {
+      } else if (estoque !== undefined) {
         const estoqueNum = Number(estoque);
-        if (estoque === undefined || isNaN(estoqueNum) || estoqueNum < 0 || !Number.isInteger(estoqueNum)) {
+        if (isNaN(estoqueNum) || estoqueNum < 0 || !Number.isInteger(estoqueNum)) {
           return res.status(400).json({ error: 'Estoque inválido. Deve ser um número inteiro maior ou igual a zero.' });
         }
         const rows = await sql`
@@ -73,6 +80,28 @@ export default async function handler(req, res) {
           RETURNING *
         `;
         atualizado = rows[0];
+      } else if (preco !== undefined || preco_custo !== undefined) {
+        const precoNum = preco !== undefined ? Number(String(preco).replace(',', '.')) : null;
+        const precoCustoNum = preco_custo !== undefined ? Number(String(preco_custo).replace(',', '.')) : null;
+
+        if (precoNum !== null && (isNaN(precoNum) || precoNum < 0)) {
+          return res.status(400).json({ error: 'Preço de venda informado é inválido.' });
+        }
+        if (precoCustoNum !== null && (isNaN(precoCustoNum) || precoCustoNum < 0)) {
+          return res.status(400).json({ error: 'Preço de custo informado é inválido.' });
+        }
+
+        const rows = await sql`
+          UPDATE produtos
+          SET 
+            preco = COALESCE(${precoNum}, preco),
+            preco_custo = COALESCE(${precoCustoNum}, preco_custo)
+          WHERE id = ${idNum}
+          RETURNING *
+        `;
+        atualizado = rows[0];
+      } else {
+        return res.status(400).json({ error: 'Nenhum campo para atualização foi informado.' });
       }
 
       if (!atualizado) {

@@ -83,8 +83,8 @@ Essa aba oferece uma visão panorâmica e em tempo real da saúde do estoque e d
 
 ### 4.1 Indicadores de Desempenho (KPIs)
 - **Itens em Estoque:** Quantidade total de unidades físicas somadas de todos os produtos.
-- **Valor em Estoque:** Quanto a comunidade possui em patrimônio físico (Preço x Quantidade).
-- **Faturamento Total:** Soma de todas as vendas já realizadas no sistema.
+- **Valor em Estoque:** Patrimônio físico em produtos a valor de venda, acompanhado pelo **Custo total investido** e o **Lucro previsto**.
+- **Faturamento Total:** Soma arrecadada com vendas registradas, exibindo o **Lucro realizado** (Faturamento subtraído do custo das peças vendidas).
 - **Estoque Crítico:** Quantidade de produtos que possuem **menos de 5 unidades** disponíveis.
 
 ### 4.2 Lista de Alerta de Reposição
@@ -136,10 +136,11 @@ Destinada à conferência de mercadorias, contagem de inventário e cadastro de 
    - **Nome do Produto:** ex: *Camiseta YCSM - You Can Sit with Me*.
    - **Categoria:** Selecione a categoria adequada.
    - **Tamanho:** Escolha entre `PP`, `P`, `M`, `G`, `GG`, `XG` ou `Único`.
-   - **Preço (R$):** Valor unitário de venda (ex: `55.00` ou `55,00`).
+   - **Preço de Custo (R$):** Valor unitário de compra/produção junto ao fornecedor (ex: `25.00` ou `25,00`).
+   - **Preço de Venda (R$):** Valor cobrado da compradora final (ex: `55.00` ou `55,00`).
    - **Estoque Inicial:** Quantidade de peças que chegaram do fornecedor.
 3. Clique em **Cadastrar Produto**.
-4. O item aparecerá imediatamente no estoque e na lista de vendas.
+4. O item aparecerá imediatamente no estoque com o cálculo automático da **Margem de Lucro** (`+R$ X (Y%)`), além de ficar disponível para venda no PDV.
 
 ### 6.3 Ajustes Rápidos de Estoque (+1 / -1)
 Ao lado de cada produto na tabela:
@@ -173,7 +174,7 @@ Esta aba só é visível para quem possui perfil de **Administradora** (`Admin`)
 O sistema permite extrair relatórios completos para prestação de contas da comunidade.
 
 ### 8.1 Exportar CSV (Excel / Google Sheets)
-- **CSV Estoque:** Gera um arquivo `.csv` com o inventário completo (ID, Produto, Categoria, Tamanho, Preço, Qtd. em Estoque e Valor Total Acumulado).
+- **CSV Estoque:** Gera um arquivo `.csv` com o inventário completo (ID, Produto, Categoria, Tamanho, Preço de Custo, Preço de Venda, Margem Unitária, Qtd. em Estoque, Total em Custo e Total em Venda).
 - **CSV Vendas:** Gera um arquivo `.csv` com todas as transações, datas, clientes e métodos de pagamento.
 - *Ambos os arquivos são exportados em formato com codificação UTF-8 e delimitador compatível com o Excel em português.*
 

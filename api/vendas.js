@@ -7,6 +7,9 @@ export default async function handler(req, res) {
 
   const sql = neon(process.env.DATABASE_URL);
 
+  // Auto-migração: adiciona coluna preco_custo na tabela vendas se não existir
+  await sql`ALTER TABLE vendas ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2) NOT NULL DEFAULT 0.00`;
+
   try {
     if (req.method === 'GET') {
       const vendas = await sql`SELECT * FROM vendas ORDER BY data_venda DESC`;
@@ -47,14 +50,15 @@ export default async function handler(req, res) {
       }
 
       const valorTotal = Number(produtoAtualizado.preco) * qtd;
+      const precoCustoUnitario = Number(produtoAtualizado.preco_custo || 0);
       const nomeCompleto = `${produtoAtualizado.nome} (Tam: ${produtoAtualizado.tamanho})`;
       const clienteLimpo = cliente && String(cliente).trim() ? String(cliente).trim() : 'Não informado';
       const pagamentoLimpo = String(pagamento).trim();
 
       try {
         const [venda] = await sql`
-          INSERT INTO vendas (produto_id, produto_nome, quantidade, valor_total, cliente, pagamento)
-          VALUES (${produtoAtualizado.id}, ${nomeCompleto}, ${qtd}, ${valorTotal}, ${clienteLimpo}, ${pagamentoLimpo})
+          INSERT INTO vendas (produto_id, produto_nome, quantidade, valor_total, preco_custo, cliente, pagamento)
+          VALUES (${produtoAtualizado.id}, ${nomeCompleto}, ${qtd}, ${valorTotal}, ${precoCustoUnitario}, ${clienteLimpo}, ${pagamentoLimpo})
           RETURNING *
         `;
         return res.status(201).json(venda);

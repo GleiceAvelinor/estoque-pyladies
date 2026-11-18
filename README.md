@@ -131,6 +131,7 @@ erDiagram
         varchar categoria
         varchar tamanho
         numeric preco
+        numeric preco_custo
         int estoque
         timestamp criado_em
     }
@@ -141,6 +142,7 @@ erDiagram
         varchar produto_nome
         int quantidade
         numeric valor_total
+        numeric preco_custo
         varchar cliente
         varchar pagamento
         timestamp data_venda
@@ -234,8 +236,8 @@ estoque-pyladies/
 
 ### Produtos (`/api/produtos`)
 - **`GET /api/produtos`**: Retorna lista de produtos ordenados por nome e tamanho.
-- **`POST /api/produtos`**: Cadastra novo item no estoque (`nome`, `categoria`, `tamanho`, `preco`, `estoque`).
-- **`PUT /api/produtos`**: Atualiza estoque de forma direta ou incremental via `{ "id": 1, "delta": 1 }`.
+- **`POST /api/produtos`**: Cadastra novo item no estoque (`nome`, `categoria`, `tamanho`, `preco`, `preco_custo`, `estoque`).
+- **`PUT /api/produtos`**: Atualiza estoque de forma direta ou incremental via `{ "id": 1, "delta": 1 }`, ou valores unitários (`preco`, `preco_custo`).
 - **`DELETE /api/produtos?id=1`**: Remove o produto (com validação de vendas vinculadas).
 
 ### Usuárias (`/api/usuarios`)

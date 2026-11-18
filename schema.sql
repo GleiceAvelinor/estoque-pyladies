@@ -21,9 +21,13 @@ CREATE TABLE IF NOT EXISTS produtos (
   categoria VARCHAR(100) NOT NULL,
   tamanho VARCHAR(50) NOT NULL,
   preco NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+  preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
   estoque INTEGER NOT NULL DEFAULT 0,
   criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migração de colunas adicionais para produtos e vendas
+ALTER TABLE produtos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
 
 CREATE TABLE IF NOT EXISTS vendas (
   id SERIAL PRIMARY KEY,
@@ -31,10 +35,13 @@ CREATE TABLE IF NOT EXISTS vendas (
   produto_nome VARCHAR(255) NOT NULL,
   quantidade INTEGER NOT NULL,
   valor_total NUMERIC(10, 2) NOT NULL,
+  preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
   cliente VARCHAR(255) DEFAULT 'Não informado',
   pagamento VARCHAR(100) NOT NULL,
   data_venda TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE vendas ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
 
 -- Índices recomendados para otimização de consultas
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(LOWER(email));
