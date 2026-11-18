@@ -112,7 +112,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.query;
+      const { id, limpar } = req.query;
+
+      if (limpar === 'tudo') {
+        await sql`TRUNCATE TABLE vendas, produtos RESTART IDENTITY CASCADE`;
+        return res.status(200).json({ ok: true, message: 'Dados de produtos e vendas limpos com sucesso.' });
+      }
+
       const idNum = Number(id);
 
       if (!id || isNaN(idNum)) {

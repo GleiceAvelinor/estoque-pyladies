@@ -402,6 +402,21 @@
             </table>
           </div>
         </div>
+
+        <!-- Zona de Manutenção do Sistema (Exclusivo Administradora) -->
+        <div class="bg-rose-50 border border-rose-200 rounded-xl p-5 flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-rose-900 flex items-center gap-2">
+              <span>⚠️</span> Zona de Manutenção (Reset de Dados)
+            </h3>
+            <p class="text-xs text-rose-700 mt-0.5">
+              Limpe os registros de produtos e vendas de testes para iniciar a operação oficial. Usuárias cadastradas permanecerão intactas.
+            </p>
+          </div>
+          <button onclick="limparBancoDados()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-lg transition shadow flex items-center gap-1.5 focus:ring-2 focus:ring-rose-500">
+            <span>🗑️</span> Limpar Produtos e Vendas
+          </button>
+        </div>
       </section>
     </main>
 
@@ -1157,6 +1172,25 @@
 
         await carregarDados();
         mostrarToast('Produto excluído com sucesso!');
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
+    }
+
+    async function limparBancoDados() {
+      const confirmacao = prompt('ATENÇÃO: Essa ação excluirá permanentemente todos os produtos e vendas cadastrados.\n\nPara confirmar a limpeza, digite "LIMPAR" abaixo:');
+      if (confirmacao !== 'LIMPAR') {
+        if (confirmacao !== null) mostrarToast('Ação cancelada: confirmação não correspondeu a "LIMPAR".', 'erro');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/produtos?limpar=tudo', { method: 'DELETE' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao limpar banco de dados.');
+
+        await carregarDados();
+        mostrarToast('Produtos e vendas foram limpos com sucesso!');
       } catch (err) {
         mostrarToast(err.message, 'erro');
       }
