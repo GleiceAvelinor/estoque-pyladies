@@ -47,6 +47,15 @@
         <p id="auth-subtitle" class="text-sm text-stone-600">Entre com sua conta para gerenciar o estoque</p>
       </div>
 
+      <!-- Alerta de Sucesso (Pendente de Aprovação) -->
+      <div id="auth-sucesso" role="status" class="hidden text-center bg-emerald-50 text-emerald-900 border border-emerald-300 p-4 rounded-xl space-y-2">
+        <p class="font-bold text-base">🎉 Cadastro Realizado!</p>
+        <p id="auth-sucesso-msg" class="text-xs text-emerald-800">Sua conta foi enviada com sucesso e está aguardando aprovação de uma administradora do PyLadies.</p>
+        <button type="button" onclick="mudarModoAuth('login')" class="mt-2 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition">
+          Voltar para o Login
+        </button>
+      </div>
+
       <form id="form-login" class="space-y-4" novalidate>
         <div id="campo-nome-div" class="hidden">
           <label for="auth-nome" class="block text-sm font-medium mb-1">Seu Nome</label>
@@ -86,10 +95,15 @@
           </div>
           <div>
             <h1 class="text-xl font-bold tracking-tight">PyLadies Fortaleza</h1>
-            <p class="text-xs text-cangaco-sand">Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span></p>
+            <p class="text-xs text-cangaco-sand">Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span> <span id="user-logado-badge" class="ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-cangaco-sand/20 text-cangaco-sand"></span></p>
           </div>
         </div>
         <nav aria-label="Ações de Relatório e Sessão" class="flex flex-wrap items-center gap-2">
+          <!-- Botão exclusivo para Administradoras -->
+          <button id="btn-gerenciar-usuarios" onclick="abrirModalUsuarios()" aria-label="Gerenciar usuárias e permissões" class="hidden bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold items-center gap-1.5">
+            👥 Usuárias <span id="badge-pendentes" class="bg-amber-400 text-stone-900 px-1.5 py-0.2 rounded-full text-xs font-bold hidden">0</span>
+          </button>
+
           <button onclick="exportarCSVEstoque()" aria-label="Exportar planilha de estoque em CSV" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold">
             CSV Estoque
           </button>
@@ -272,10 +286,46 @@
     </footer>
   </div>
 
+  <!-- MODAL DE GERENCIAMENTO DE USUÁRIAS (EXCLUSIVO ADMIN) -->
+  <div id="modal-usuarios" role="dialog" aria-modal="true" class="fixed inset-0 bg-stone-900/80 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white max-w-4xl w-full p-6 rounded-2xl shadow-2xl border border-cangaco-sand space-y-5 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-cangaco-sand pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-cangaco-dark">Gerenciamento de Usuárias & Autorizações</h3>
+          <p class="text-xs text-stone-500">Aprove novas voluntárias e controle os acessos ao estoque</p>
+        </div>
+        <button onclick="fecharModalUsuarios()" class="text-stone-400 hover:text-stone-700 text-2xl font-bold p-1 leading-none">&times;</button>
+      </div>
+
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left text-sm" aria-label="Tabela de Usuárias">
+          <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+            <tr>
+              <th scope="col" class="px-3 py-2.5">Nome</th>
+              <th scope="col" class="px-3 py-2.5">E-mail</th>
+              <th scope="col" class="px-3 py-2.5">Perfil</th>
+              <th scope="col" class="px-3 py-2.5">Status</th>
+              <th scope="col" class="px-3 py-2.5 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-usuarios" class="divide-y divide-stone-200"></tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-stone-200 pt-3 flex justify-end">
+        <button onclick="fecharModalUsuarios()" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold rounded-lg text-sm transition">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let modoAuthAtual = 'login';
+    let usuarioAtual = null;
     let produtos = [];
     let vendas = [];
+    let usuariosLista = [];
     let toastTimeout = null;
 
     // Função utilitária para prevenir XSS
@@ -323,8 +373,12 @@
       const linkCadastro = document.getElementById('link-cadastro');
       const linkVoltar = document.getElementById('link-voltar');
       const errEl = document.getElementById('auth-erro');
+      const sucessoEl = document.getElementById('auth-sucesso');
+      const formLogin = document.getElementById('form-login');
 
       errEl.classList.add('hidden');
+      sucessoEl.classList.add('hidden');
+      formLogin.classList.remove('hidden');
       senhaInput.value = '';
 
       if (modo === 'login') {
@@ -339,11 +393,11 @@
         linkVoltar.classList.add('hidden');
       } else if (modo === 'cadastro') {
         titulo.textContent = 'Criar Nova Conta';
-        subtitulo.textContent = 'Cadastre-se para acessar o sistema';
+        subtitulo.textContent = 'Cadastre-se para solicitar acesso ao sistema';
         campoNome.classList.remove('hidden');
         labelSenha.textContent = 'Senha (mín. 6 caracteres)';
         senhaInput.placeholder = '••••••••';
-        btn.textContent = 'Cadastrar Conta';
+        btn.textContent = 'Solicitar Cadastro';
         linkEsqueci.classList.add('hidden');
         linkCadastro.classList.add('hidden');
         linkVoltar.classList.remove('hidden');
@@ -366,8 +420,10 @@
       const senha = document.getElementById('auth-senha').value;
       const nome = document.getElementById('auth-nome').value.trim();
       const errEl = document.getElementById('auth-erro');
+      const sucessoEl = document.getElementById('auth-sucesso');
       const btn = document.getElementById('auth-btn');
       errEl.classList.add('hidden');
+      sucessoEl.classList.add('hidden');
 
       if (!email) {
         errEl.textContent = 'Por favor, informe seu e-mail.';
@@ -376,7 +432,7 @@
       }
 
       if (modoAuthAtual === 'cadastro' && !nome) {
-        errEl.textContent = 'Por favor, informe seu nome.';
+        errEl.textContent = 'Por favor, informe seu nome completo.';
         errEl.classList.remove('hidden');
         return;
       }
@@ -417,6 +473,16 @@
           return;
         }
 
+        // Se cadastrou e ficou pendente de aprovação
+        if (data.pendente) {
+          e.target.reset();
+          e.target.classList.add('hidden');
+          sucessoEl.classList.remove('hidden');
+          document.getElementById('auth-sucesso-msg').textContent = data.mensagem || 'Sua conta foi enviada para aprovação de uma administradora do PyLadies.';
+          return;
+        }
+
+        // Se aprovada ou primeira usuária (admin)
         localStorage.setItem('pyladies_user', JSON.stringify(data));
         iniciarApp(data);
       } catch (err) {
@@ -446,6 +512,7 @@
 
     function fazerLogout() {
       localStorage.removeItem('pyladies_user');
+      usuarioAtual = null;
       produtos = [];
       vendas = [];
       document.getElementById('app-content').classList.add('hidden');
@@ -454,10 +521,48 @@
     }
 
     function iniciarApp(user) {
+      usuarioAtual = user;
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
       document.getElementById('user-logado-nome').textContent = user.nome || 'Usuária';
+      
+      const badgePerfil = document.getElementById('user-logado-badge');
+      const btnGerenciar = document.getElementById('btn-gerenciar-usuarios');
+
+      if (user.perfil === 'admin') {
+        badgePerfil.textContent = 'Admin';
+        badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-500/20 text-cangaco-gold border border-cangaco-gold/40';
+        btnGerenciar.classList.remove('hidden');
+        btnGerenciar.classList.add('flex');
+        checarPendencias();
+      } else {
+        badgePerfil.textContent = 'Membro';
+        badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-stone-500/20 text-cangaco-sand';
+        btnGerenciar.classList.add('hidden');
+        btnGerenciar.classList.remove('flex');
+      }
+
       carregarDados();
+    }
+
+    // Verifica se há usuárias pendentes para notificar no badge do cabeçalho
+    async function checarPendencias() {
+      if (!usuarioAtual || usuarioAtual.perfil !== 'admin') return;
+      try {
+        const res = await fetch('/api/usuarios');
+        if (!res.ok) return;
+        const lista = await res.json();
+        const pendentes = lista.filter(u => u.status === 'pendente').length;
+        const badge = document.getElementById('badge-pendentes');
+        if (pendentes > 0) {
+          badge.textContent = pendentes;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      } catch (e) {
+        console.warn('Erro ao verificar pendências:', e);
+      }
     }
 
     const formatarMoeda = (v) => {
@@ -774,14 +879,141 @@
       }
     }
 
-    // Escape de células CSV RFC 4180
+    // ==========================================
+    // GERENCIAMENTO DE USUÁRIAS (EXCLUSIVO ADMIN)
+    // ==========================================
+    async function abrirModalUsuarios() {
+      document.getElementById('modal-usuarios').classList.remove('hidden');
+      await carregarUsuarios();
+    }
+
+    function fecharModalUsuarios() {
+      document.getElementById('modal-usuarios').classList.add('hidden');
+      checarPendencias();
+    }
+
+    async function carregarUsuarios() {
+      const tbody = document.getElementById('tabela-usuarios');
+      tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-stone-500">Carregando lista de usuárias...</td></tr>';
+
+      try {
+        const res = await fetch('/api/usuarios');
+        if (!res.ok) throw new Error('Não foi possível carregar as usuárias.');
+        usuariosLista = await res.json();
+        renderizarTabelaUsuarios();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-rose-600">${escapeHTML(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderizarTabelaUsuarios() {
+      const tbody = document.getElementById('tabela-usuarios');
+      if (usuariosLista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-stone-500">Nenhuma usuária cadastrada.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = usuariosLista.map(u => {
+        const isSelf = usuarioAtual && usuarioAtual.id === u.id;
+        const statusBadge = u.status === 'aprovado' 
+          ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Aprovada</span>'
+          : u.status === 'pendente'
+          ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 animate-pulse">Pendente</span>'
+          : '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800">Bloqueada</span>';
+
+        const perfilBadge = u.perfil === 'admin'
+          ? '<span class="font-bold text-cangaco-brown">Admin</span>'
+          : '<span class="text-stone-600">Membro</span>';
+
+        return `
+          <tr class="hover:bg-cangaco-cream/40">
+            <td class="px-3 py-3 font-medium">${escapeHTML(u.nome)} ${isSelf ? '<span class="text-xs text-cangaco-gold font-bold">(Você)</span>' : ''}</td>
+            <td class="px-3 py-3 text-stone-600 text-xs">${escapeHTML(u.email)}</td>
+            <td class="px-3 py-3">${perfilBadge}</td>
+            <td class="px-3 py-3">${statusBadge}</td>
+            <td class="px-3 py-3 text-right space-x-1 whitespace-nowrap">
+              ${u.status === 'pendente' ? `
+                <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition">Aprovar</button>
+                <button onclick="excluirUsuario(${u.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-semibold transition">Recusar</button>
+              ` : `
+                ${!isSelf ? `
+                  ${u.status === 'aprovado' ? `
+                    <button onclick="alterarStatusUsuario(${u.id}, 'bloqueado')" class="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-xs font-medium transition">Bloquear</button>
+                  ` : `
+                    <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded text-xs font-medium transition">Reativar</button>
+                  `}
+                  <button onclick="alternarPerfilUsuario(${u.id}, '${u.perfil === 'admin' ? 'membro' : 'admin'}')" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded text-xs font-medium transition">
+                    ${u.perfil === 'admin' ? 'Tornar Membro' : 'Tornar Admin'}
+                  </button>
+                  <button onclick="excluirUsuario(${u.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-medium transition">Excluir</button>
+                ` : '<span class="text-xs text-stone-400 italic">Sua conta</span>'}
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function alterarStatusUsuario(id, novoStatus) {
+      try {
+        const res = await fetch('/api/usuarios', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, status: novoStatus })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao alterar status.');
+
+        mostrarToast(`Usuária ${novoStatus === 'aprovado' ? 'aprovada' : 'bloqueada'} com sucesso!`);
+        await carregarUsuarios();
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
+    }
+
+    async function alternarPerfilUsuario(id, novoPerfil) {
+      try {
+        const res = await fetch('/api/usuarios', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, perfil: novoPerfil })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao alterar perfil.');
+
+        mostrarToast(`Perfil alterado para ${novoPerfil === 'admin' ? 'Administradora' : 'Membro'}!`);
+        await carregarUsuarios();
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
+    }
+
+    async function excluirUsuario(id) {
+      const u = usuariosLista.find(item => item.id === id);
+      const nome = u ? u.nome : 'esta usuária';
+      if (!confirm(`Deseja realmente remover o acesso de "${nome}"?`)) return;
+
+      try {
+        const res = await fetch(`/api/usuarios?id=${id}`, { method: 'DELETE' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao remover usuária.');
+
+        mostrarToast('Usuária removida com sucesso!');
+        await carregarUsuarios();
+      } catch (err) {
+        mostrarToast(err.message, 'erro');
+      }
+    }
+
+    // ==========================================
+    // EXPORTAÇÕES (CSV E PDF)
+    // ==========================================
     function escapeCSV(valor) {
       if (valor === null || valor === undefined) return '""';
       const str = String(valor).replace(/"/g, '""');
       return `"${str}"`;
     }
 
-    // Exportação CSV Estoque
     function exportarCSVEstoque() {
       if (produtos.length === 0) {
         mostrarToast('Não há produtos cadastrados para exportar.', 'erro');
@@ -806,7 +1038,6 @@
       mostrarToast('Planilha de estoque exportada!');
     }
 
-    // Exportação CSV Vendas
     function exportarCSVVendas() {
       if (vendas.length === 0) {
         mostrarToast('Não há vendas registradas para exportar.', 'erro');
@@ -842,7 +1073,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Exportação PDF Consolidado
     function exportarPDF() {
       if (!window.jspdf || !window.jspdf.jsPDF) {
         mostrarToast('Biblioteca PDF ainda carregando. Aguarde alguns instantes.', 'erro');
@@ -852,11 +1082,9 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
-      // Barra superior personalizada
       doc.setFillColor(61, 21, 8);
       doc.rect(0, 0, 210, 32, 'F');
 
-      // Embutir logo se disponível no DOM
       const headerLogo = document.getElementById('header-logo-img') || document.getElementById('logo-img');
       if (headerLogo && headerLogo.complete && headerLogo.naturalWidth > 0) {
         try {

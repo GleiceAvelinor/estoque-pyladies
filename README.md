@@ -34,7 +34,8 @@ A aplicação foi projetada no modelo **JAMstack / Serverless**, garantindo:
 
 ## ✨ Funcionalidades Principais
 
-- 🔐 **Autenticação Segura:** Cadastro de usuárias, login com hash de senha via `bcryptjs`, recuperação de senha e persistência de sessão.
+- 🔐 **Autenticação Segura & Controle de Acesso:** Cadastro de usuárias, login com hash via `bcryptjs`, recuperação de senha, persistência de sessão e **sistema de aprovação prévia** (novas contas ficam pendentes até aprovação por uma administradora).
+- 👥 **Gestão de Usuárias (Exclusivo Admin):** Painel interativo para administradoras aprovarem cadastros pendentes, bloquearem contas, alternarem permissões (Admin / Membro) ou excluírem acessos.
 - 📦 **Gestão de Estoque:** Cadastro completo de itens (nome, categoria, tamanho, preço e quantidade inicial), filtragem em tempo real e atualização atômica de estoque (+1 / -1).
 - 💰 **Registro de Vendas:** Seleção de produtos com validação de disponibilidade, cálculo automático do valor total, registro do cliente e método de pagamento.
 - ⚡ **Prevenção de Condições de Corrida:** Dedução atômica em nível de banco de dados (`UPDATE ... RETURNING`), evitando estoque negativo em compras simultâneas.
@@ -235,6 +236,11 @@ estoque-pyladies/
 - **`POST /api/produtos`**: Cadastra novo item no estoque (`nome`, `categoria`, `tamanho`, `preco`, `estoque`).
 - **`PUT /api/produtos`**: Atualiza estoque de forma direta ou incremental via `{ "id": 1, "delta": 1 }`.
 - **`DELETE /api/produtos?id=1`**: Remove o produto (com validação de vendas vinculadas).
+
+### Usuárias (`/api/usuarios`)
+- **`GET /api/usuarios`**: Retorna lista de usuárias cadastradas com status e perfil.
+- **`PUT /api/usuarios`**: Atualiza status (`aprovado`, `bloqueado`, `pendente`) ou perfil (`admin`, `membro`).
+- **`DELETE /api/usuarios?id=1`**: Remove o cadastro de uma usuária.
 
 ### Vendas (`/api/vendas`)
 - **`GET /api/vendas`**: Retorna histórico completo de vendas ordenado por data decrescente.

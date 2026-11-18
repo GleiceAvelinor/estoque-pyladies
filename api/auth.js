@@ -13,6 +13,10 @@ export default async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
 
   try {
+    // Garante que as colunas status e perfil existam (migração transparente)
+    await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pendente'`;
+    await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS perfil VARCHAR(20) DEFAULT 'membro'`;
+
     const { acao } = req.body || {};
 
     if (acao === 'login') {
@@ -32,7 +36,26 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'E-mail ou senha inválidos.' });
       }
 
-      return res.status(200).json({ id: user.id, nome: user.nome, email: user.email });
+      // Verificação de autorização e status de aprovação
+      const status = user.status || 'aprovado';
+      if (status === 'pendente') {
+        return res.status(403).json({ 
+          error: 'Sua conta está aguardando aprovação de uma administradora do PyLadies Fortaleza.' 
+        });
+      }
+      if (status === 'bloqueado') {
+        return res.status(403).json({ 
+          error: 'Sua conta foi desativada. Entre em contato com a coordenação do PyLadies.' 
+        });
+      }
+
+      return res.status(200).json({ 
+        id: user.id, 
+        nome: user.nome, 
+        email: user.email,
+        perfil: user.perfil || 'membro',
+        status: status
+      });
     }
 
     if (acao === 'cadastro') {
@@ -58,15 +81,39 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
       }
 
+      // Se for a primeira usuária do sistema, vira administradora aprovada automaticamente
+      const countResult = await sql`SELECT COUNT(*)::int as total FROM usuarios`;
+      const isPrimeiraUsuaria = Number(countResult[0]?.total || 0) === 0;
+
+      const statusInicial = isPrimeiraUsuaria ? 'aprovado' : 'pendente';
+      const perfilInicial = isPrimeiraUsuaria ? 'admin' : 'membro';
+
       const salt = await bcrypt.genSalt(10);
       const senha_hash = await bcrypt.hash(senhaStr, salt);
 
       const [novoUser] = await sql`
-        INSERT INTO usuarios (nome, email, senha_hash)
-        VALUES (${nomeLimpo}, ${emailNormalizado}, ${senha_hash})
-        RETURNING id, nome, email
+        INSERT INTO usuarios (nome, email, senha_hash, status, perfil)
+        VALUES (${nomeLimpo}, ${emailNormalizado}, ${senha_hash}, ${statusInicial}, ${perfilInicial})
+        RETURNING id, nome, email, status, perfil
       `;
-      return res.status(201).json(novoUser);
+
+      if (isPrimeiraUsuaria) {
+        return res.status(201).json({
+          id: novoUser.id,
+          nome: novoUser.nome,
+          email: novoUser.email,
+          status: novoUser.status,
+          perfil: novoUser.perfil,
+          mensagem: 'Primeira administradora cadastrada com sucesso!'
+        });
+      }
+
+      return res.status(201).json({
+        pendente: true,
+        nome: novoUser.nome,
+        email: novoUser.email,
+        mensagem: 'Cadastro realizado com sucesso! Aguarde a aprovação de uma administradora para acessar o sistema.'
+      });
     }
 
     if (acao === 'recuperar') {

@@ -6,8 +6,14 @@ CREATE TABLE IF NOT EXISTS usuarios (
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   senha_hash VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pendente',
+  perfil VARCHAR(20) NOT NULL DEFAULT 'membro',
   criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migração para tabelas já existentes
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pendente';
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS perfil VARCHAR(20) DEFAULT 'membro';
 
 CREATE TABLE IF NOT EXISTS produtos (
   id SERIAL PRIMARY KEY,
@@ -32,5 +38,6 @@ CREATE TABLE IF NOT EXISTS vendas (
 
 -- Índices recomendados para otimização de consultas
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_usuarios_status ON usuarios(status);
 CREATE INDEX IF NOT EXISTS idx_produtos_nome ON produtos(nome);
 CREATE INDEX IF NOT EXISTS idx_vendas_data ON vendas(data_venda DESC);
