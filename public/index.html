@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PyLadies Fortaleza | Controle de Estoque & Vendas</title>
   <link rel="icon" type="image/png" href="/logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- jsPDF e AutoTable para geração de relatórios PDF -->
+  <!-- jsPDF e AutoTable para relatórios PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script>
@@ -28,82 +28,81 @@
     }
   </script>
 </head>
-<body class="bg-cangaco-cream text-cangaco-dark min-h-screen font-sans flex flex-col justify-between">
+<body class="bg-cangaco-cream text-cangaco-dark min-h-screen font-sans flex flex-col justify-between selection:bg-cangaco-gold selection:text-cangaco-dark">
 
-  <!-- 1. TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO / ESQUECI A SENHA) COM A LOGO -->
-  <div id="auth-screen" class="fixed inset-0 bg-cangaco-dark/95 z-50 flex items-center justify-center p-4">
+  <!-- TELA DE AUTENTICAÇÃO -->
+  <div id="auth-screen" role="region" aria-label="Área de Autenticação" class="fixed inset-0 bg-cangaco-dark/95 z-50 flex items-center justify-center p-4">
     <div class="bg-white max-w-md w-full p-8 rounded-2xl shadow-2xl border border-cangaco-sand space-y-6">
       <div class="text-center space-y-3">
-        <!-- Logo Oficial do PyLadies Fortaleza -->
         <div class="w-28 h-28 mx-auto flex items-center justify-center overflow-hidden rounded-full shadow-md bg-white border-2 border-cangaco-gold p-1">
-          <img id="logo-img" src="/logo.png" alt="Logo PyLadies Fortaleza" class="w-full h-full object-contain">
+          <img id="logo-img" src="/public/logo.png" alt="Logotipo oficial do PyLadies Fortaleza" class="w-full h-full object-contain">
         </div>
         <h2 id="auth-title" class="text-2xl font-bold text-cangaco-dark">PyLadies Fortaleza</h2>
         <p id="auth-subtitle" class="text-sm text-stone-600">Entre com sua conta para gerenciar o estoque</p>
       </div>
 
-      <form id="form-login" class="space-y-4">
+      <form id="form-login" class="space-y-4" novalidate>
         <div id="campo-nome-div" class="hidden">
-          <label class="block text-sm font-medium mb-1">Seu Nome</label>
-          <input type="text" id="auth-nome" placeholder="Ex: Gleice Avelino" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+          <label for="auth-nome" class="block text-sm font-medium mb-1">Seu Nome</label>
+          <input type="text" id="auth-nome" placeholder="Ex: Gleice Avelino" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">E-mail</label>
-          <input type="email" id="auth-email" placeholder="seu@email.com" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+          <label for="auth-email" class="block text-sm font-medium mb-1">E-mail</label>
+          <input type="email" id="auth-email" placeholder="seu@email.com" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
         </div>
         <div>
-          <label id="label-senha" class="block text-sm font-medium mb-1">Senha</label>
-          <input type="password" id="auth-senha" placeholder="••••••••" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+          <label for="auth-senha" id="label-senha" class="block text-sm font-medium mb-1">Senha</label>
+          <input type="password" id="auth-senha" placeholder="••••••••" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
         </div>
 
-        <div id="auth-erro" class="text-xs text-rose-600 font-medium hidden text-center"></div>
+        <div id="auth-erro" role="alert" class="text-xs text-rose-600 font-medium hidden text-center bg-rose-50 p-2 rounded border border-rose-200"></div>
 
-        <button type="submit" id="auth-btn" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition">
+        <button type="submit" id="auth-btn" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold">
           Entrar no Sistema
         </button>
       </form>
 
       <div class="flex flex-col gap-2 text-center text-sm pt-2 border-t border-stone-200">
-        <button type="button" onclick="mudarModoAuth('esqueci')" id="link-esqueci" class="text-cangaco-leather hover:underline">Esqueci minha senha</button>
-        <button type="button" onclick="mudarModoAuth('cadastro')" id="link-cadastro" class="text-stone-600 hover:underline">Não tem conta? Cadastre-se</button>
-        <button type="button" onclick="mudarModoAuth('login')" id="link-voltar" class="text-cangaco-brown font-semibold hover:underline hidden">Voltar para o Login</button>
+        <button type="button" onclick="mudarModoAuth('esqueci')" id="link-esqueci" class="text-cangaco-leather hover:underline focus:outline-none focus:ring-1 focus:ring-cangaco-brown">Esqueci minha senha</button>
+        <button type="button" onclick="mudarModoAuth('cadastro')" id="link-cadastro" class="text-stone-600 hover:underline focus:outline-none focus:ring-1 focus:ring-stone-600">Não tem conta? Cadastre-se</button>
+        <button type="button" onclick="mudarModoAuth('login')" id="link-voltar" class="text-cangaco-brown font-semibold hover:underline hidden focus:outline-none focus:ring-1 focus:ring-cangaco-brown">Voltar para o Login</button>
       </div>
     </div>
   </div>
 
-  <!-- 2. APLICAÇÃO PRINCIPAL COM A LOGO NO CABEÇALHO E RODAPÉ -->
+  <!-- APLICAÇÃO PRINCIPAL -->
   <div id="app-content" class="hidden flex-1 flex flex-col">
-    <header class="bg-cangaco-dark text-cangaco-cream shadow-md">
+    <header class="bg-cangaco-dark text-cangaco-cream shadow-md" role="banner">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-full overflow-hidden shadow bg-white border-2 border-cangaco-gold p-0.5 flex items-center justify-center">
-            <img src="/logo.png" alt="Logo PyLadies Fortaleza" class="w-full h-full object-contain">
+            <img src="/public/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-full h-full object-contain">
           </div>
           <div>
             <h1 class="text-xl font-bold tracking-tight">PyLadies Fortaleza</h1>
             <p class="text-xs text-cangaco-sand">Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span></p>
           </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button onclick="exportarCSVEstoque()" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+        <nav aria-label="Ações de Relatório e Sessão" class="flex flex-wrap items-center gap-2">
+          <button onclick="exportarCSVEstoque()" aria-label="Exportar planilha de estoque em CSV" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold">
             CSV Estoque
           </button>
-          <button onclick="exportarCSVVendas()" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+          <button onclick="exportarCSVVendas()" aria-label="Exportar histórico de vendas em CSV" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold">
             CSV Vendas
           </button>
-          <button onclick="exportarPDF()" class="bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+          <button onclick="exportarPDF()" aria-label="Emitir relatório consolidado em PDF" class="bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-amber-700">
             Relatório PDF
           </button>
-          <button onclick="fazerLogout()" class="bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs sm:text-sm px-3 py-2 rounded-lg border border-rose-700 transition">
+          <button onclick="fazerLogout()" aria-label="Sair do sistema" class="bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs sm:text-sm px-3 py-2 rounded-lg border border-rose-700 transition focus:ring-2 focus:ring-rose-500">
             Sair
           </button>
-        </div>
+        </nav>
       </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-6 space-y-6 flex-1 w-full">
+    <main class="max-w-6xl mx-auto px-4 py-6 space-y-6 flex-1 w-full" role="main">
       <!-- KPIs -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section aria-label="Indicadores de Desempenho" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
           <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Itens em Estoque</p>
           <p id="kpi-estoque" class="text-2xl font-bold mt-1">0</p>
@@ -126,21 +125,21 @@
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
           <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Registrar Nova Venda</h2>
-          <form id="form-venda" class="space-y-4">
+          <form id="form-venda" class="space-y-4" novalidate>
             <div>
-              <label class="block text-sm font-medium mb-1">Produto</label>
-              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 bg-cangaco-cream/40">
+              <label for="venda-produto" class="block text-sm font-medium mb-1">Produto</label>
+              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 bg-cangaco-cream/40 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                 <option value="">Carregando...</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-sm font-medium mb-1">Quantidade</label>
-                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="venda-qtd" class="block text-sm font-medium mb-1">Quantidade</label>
+                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Pagamento</label>
-                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="venda-pagamento" class="block text-sm font-medium mb-1">Pagamento</label>
+                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                   <option value="Pix">Pix</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
@@ -149,10 +148,10 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Compradora / Cliente (opcional)</label>
-              <input type="text" id="venda-cliente" placeholder="Ex: Maria Silva" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+              <label for="venda-cliente" class="block text-sm font-medium mb-1">Compradora / Cliente (opcional)</label>
+              <input type="text" id="venda-cliente" placeholder="Ex: Maria Silva" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
             </div>
-            <button type="submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition">
+            <button type="submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold">
               Confirmar Venda e Abater Estoque
             </button>
           </form>
@@ -160,15 +159,15 @@
 
         <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
           <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Cadastrar Produto no Estoque</h2>
-          <form id="form-produto" class="space-y-4">
+          <form id="form-produto" class="space-y-4" novalidate>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div class="sm:col-span-2">
-                <label class="block text-sm font-medium mb-1">Nome do Produto</label>
-                <input type="text" id="prod-nome" placeholder="Ex: Camisa YCSM" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="prod-nome" class="block text-sm font-medium mb-1">Nome do Produto</label>
+                <input type="text" id="prod-nome" placeholder="Ex: Camisa YCSM" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Tamanho</label>
-                <select id="prod-tamanho" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="prod-tamanho" class="block text-sm font-medium mb-1">Tamanho</label>
+                <select id="prod-tamanho" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                   <option value="PP">PP</option>
                   <option value="P">P</option>
                   <option value="M">M</option>
@@ -181,8 +180,8 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label class="block text-sm font-medium mb-1">Categoria</label>
-                <select id="prod-categoria" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="prod-categoria" class="block text-sm font-medium mb-1">Categoria</label>
+                <select id="prod-categoria" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                   <option value="Vestuário">Vestuário</option>
                   <option value="Acessórios">Acessórios</option>
                   <option value="Papelaria">Papelaria</option>
@@ -190,15 +189,15 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Preço (R$)</label>
-                <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="prod-preco" class="block text-sm font-medium mb-1">Preço (R$)</label>
+                <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Qtd. Inicial</label>
-                <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                <label for="prod-estoque" class="block text-sm font-medium mb-1">Qtd. Inicial</label>
+                <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
             </div>
-            <button type="submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition">
+            <button type="submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-leather">
               Adicionar Produto ao Banco
             </button>
           </form>
@@ -209,18 +208,21 @@
       <section class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
         <div class="p-5 border-b border-cangaco-sand flex flex-wrap justify-between items-center gap-3">
           <h2 class="text-lg font-bold text-cangaco-brown">Estoque Atual</h2>
-          <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar produto..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">
+          <div>
+            <label for="busca-produto" class="sr-only">Filtrar produto</label>
+            <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar produto..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+          </div>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm" aria-label="Tabela de Estoque Atual">
             <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
               <tr>
-                <th class="px-4 py-3">Produto</th>
-                <th class="px-4 py-3">Categoria</th>
-                <th class="px-4 py-3">Tamanho</th>
-                <th class="px-4 py-3">Preço</th>
-                <th class="px-4 py-3">Estoque</th>
-                <th class="px-4 py-3 text-right">Ações</th>
+                <th scope="col" class="px-4 py-3">Produto</th>
+                <th scope="col" class="px-4 py-3">Categoria</th>
+                <th scope="col" class="px-4 py-3">Tamanho</th>
+                <th scope="col" class="px-4 py-3">Preço</th>
+                <th scope="col" class="px-4 py-3">Estoque</th>
+                <th scope="col" class="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody id="tabela-produtos" class="divide-y divide-stone-200"></tbody>
@@ -234,15 +236,15 @@
           <h2 class="text-lg font-bold text-cangaco-brown">Histórico de Vendas</h2>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left text-sm" aria-label="Histórico de Vendas Realizadas">
             <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
               <tr>
-                <th class="px-4 py-3">Data</th>
-                <th class="px-4 py-3">Produto</th>
-                <th class="px-4 py-3">Qtd</th>
-                <th class="px-4 py-3">Total</th>
-                <th class="px-4 py-3">Pagamento</th>
-                <th class="px-4 py-3">Cliente</th>
+                <th scope="col" class="px-4 py-3">Data</th>
+                <th scope="col" class="px-4 py-3">Produto</th>
+                <th scope="col" class="px-4 py-3">Qtd</th>
+                <th scope="col" class="px-4 py-3">Total</th>
+                <th scope="col" class="px-4 py-3">Pagamento</th>
+                <th scope="col" class="px-4 py-3">Cliente</th>
               </tr>
             </thead>
             <tbody id="tabela-vendas" class="divide-y divide-stone-200"></tbody>
@@ -251,10 +253,9 @@
       </section>
     </main>
 
-    <!-- Rodapé com a Logo -->
-    <footer class="bg-cangaco-sand/50 border-t border-cangaco-sand py-4 mt-8">
+    <footer class="bg-cangaco-sand/50 border-t border-cangaco-sand py-4 mt-8" role="contentinfo">
       <div class="max-w-6xl mx-auto px-4 flex items-center justify-center gap-2 text-xs text-cangaco-brown font-medium">
-        <img src="/logo.png" alt="PyLadies Fortaleza" class="w-6 h-6 rounded-full object-contain bg-white p-0.5">
+        <img src="/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-6 h-6 rounded-full object-contain bg-white p-0.5">
         <span>PyLadies Fortaleza • Sistema de Gestão de Estoque e Vendas</span>
       </div>
     </footer>
@@ -423,9 +424,9 @@
           <td class="px-4 py-3">${formatarMoeda(p.preco)}</td>
           <td class="px-4 py-3 font-bold ${p.estoque < 5 ? 'text-rose-600' : 'text-emerald-700'}">${p.estoque} un.</td>
           <td class="px-4 py-3 text-right space-x-1">
-            <button onclick="ajustarEstoque(${p.id}, ${Number(p.estoque) + 1})" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold">+1</button>
-            <button onclick="ajustarEstoque(${p.id}, ${Math.max(0, Number(p.estoque) - 1)})" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold">-1</button>
-            <button onclick="excluirProduto(${p.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs">Excluir</button>
+            <button onclick="ajustarEstoque(${p.id}, ${Number(p.estoque) + 1})" aria-label="Aumentar estoque de ${p.nome}" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold focus:ring-1 focus:ring-stone-600">+1</button>
+            <button onclick="ajustarEstoque(${p.id}, ${Math.max(0, Number(p.estoque) - 1)})" aria-label="Diminuir estoque de ${p.nome}" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold focus:ring-1 focus:ring-stone-600">-1</button>
+            <button onclick="excluirProduto(${p.id})" aria-label="Excluir produto ${p.nome}" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs focus:ring-1 focus:ring-rose-500">Excluir</button>
           </td>
         </tr>
       `).join('');
@@ -536,7 +537,7 @@
       link.remove();
     }
 
-    // 3. EXPORTAÇÃO PDF CONSOLIDADO COM A LOGO NO CABEÇALHO
+    // EXPORTAÇÃO PDF CONSOLIDADO
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -544,7 +545,6 @@
       doc.setFillColor(61, 21, 8);
       doc.rect(0, 0, 210, 32, 'F');
 
-      // Insere a logo no cabeçalho do PDF se já estiver carregada
       const imgLogo = document.getElementById('logo-img');
       if (imgLogo && imgLogo.complete) {
         try {
@@ -552,7 +552,7 @@
           doc.circle(22, 16, 11, 'F');
           doc.addImage(imgLogo, 'PNG', 12, 6, 20, 20);
         } catch (e) {
-          console.warn('Não foi possível embutir a imagem no PDF:', e);
+          console.warn('Erro ao embutir logo no PDF:', e);
         }
       }
 
