@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyLadies Fortaleza | Controle de Estoque & Vendas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jsPDF e AutoTable para geração de relatórios PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cangaco: {
+              dark: '#3D1508',
+              brown: '#6B3410',
+              leather: '#8B4513',
+              gold: '#D99B26',
+              cream: '#FDF8F2',
+              sand: '#F3E5D0'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cangaco-cream text-cangaco-dark min-h-screen font-sans flex flex-col justify-between">
+
+  <!-- TELA DE AUTENTICAÇÃO -->
+  <div id="auth-screen" class="fixed inset-0 bg-cangaco-dark/95 z-50 flex items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full p-8 rounded-2xl shadow-2xl border border-cangaco-sand space-y-6">
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 bg-cangaco-gold text-cangaco-dark font-bold text-2xl rounded-full flex items-center justify-center mx-auto shadow">
+          Py
+        </div>
+        <h2 id="auth-title" class="text-2xl font-bold text-cangaco-dark">PyLadies Fortaleza</h2>
+        <p id="auth-subtitle" class="text-sm text-stone-600">Entre com sua conta para gerenciar o estoque</p>
+      </div>
+
+      <form id="form-login" class="space-y-4">
+        <div id="campo-nome-div" class="hidden">
+          <label class="block text-sm font-medium mb-1">Seu Nome</label>
+          <input type="text" id="auth-nome" placeholder="Ex: Gleice Avelino" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">E-mail</label>
+          <input type="email" id="auth-email" placeholder="seu@email.com" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+        </div>
+        <div>
+          <label id="label-senha" class="block text-sm font-medium mb-1">Senha</label>
+          <input type="password" id="auth-senha" placeholder="••••••••" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+        </div>
+
+        <div id="auth-erro" class="text-xs text-rose-600 font-medium hidden text-center"></div>
+
+        <button type="submit" id="auth-btn" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition">
+          Entrar no Sistema
+        </button>
+      </form>
+
+      <div class="flex flex-col gap-2 text-center text-sm pt-2 border-t border-stone-200">
+        <button type="button" onclick="mudarModoAuth('esqueci')" id="link-esqueci" class="text-cangaco-leather hover:underline">Esqueci minha senha</button>
+        <button type="button" onclick="mudarModoAuth('cadastro')" id="link-cadastro" class="text-stone-600 hover:underline">Não tem conta? Cadastre-se</button>
+        <button type="button" onclick="mudarModoAuth('login')" id="link-voltar" class="text-cangaco-brown font-semibold hover:underline hidden">Voltar para o Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="app-content" class="hidden flex-1 flex flex-col">
+    <header class="bg-cangaco-dark text-cangaco-cream shadow-md">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-cangaco-gold text-cangaco-dark font-bold flex items-center justify-center text-lg shadow">
+            Py
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight">PyLadies Fortaleza</h1>
+            <p class="text-xs text-cangaco-sand">Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span></p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="exportarCSVEstoque()" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+            CSV Estoque
+          </button>
+          <button onclick="exportarCSVVendas()" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+            CSV Vendas
+          </button>
+          <button onclick="exportarPDF()" class="bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition">
+            Relatório PDF
+          </button>
+          <button onclick="fazerLogout()" class="bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs sm:text-sm px-3 py-2 rounded-lg border border-rose-700 transition">
+            Sair
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 space-y-6 flex-1 w-full">
+      <!-- KPIs -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Itens em Estoque</p>
+          <p id="kpi-estoque" class="text-2xl font-bold mt-1">0</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Valor em Estoque</p>
+          <p id="kpi-valor-estoque" class="text-2xl font-bold mt-1">R$ 0,00</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Total Vendido</p>
+          <p id="kpi-faturamento" class="text-2xl font-bold text-emerald-700 mt-1">R$ 0,00</p>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
+          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Estoque Baixo (< 5)</p>
+          <p id="kpi-baixo" class="text-2xl font-bold text-rose-700 mt-1">0</p>
+        </div>
+      </section>
+
+      <!-- Formulários -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
+          <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Registrar Nova Venda</h2>
+          <form id="form-venda" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Produto</label>
+              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 bg-cangaco-cream/40">
+                <option value="">Carregando...</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium mb-1">Quantidade</label>
+                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Pagamento</label>
+                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                  <option value="Pix">Pix</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
+                  <option value="Cartão de Débito">Cartão de Débito</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Compradora / Cliente (opcional)</label>
+              <input type="text" id="venda-cliente" placeholder="Ex: Maria Silva" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+            </div>
+            <button type="submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition">
+              Confirmar Venda e Abater Estoque
+            </button>
+          </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
+          <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Cadastrar Produto no Estoque</h2>
+          <form id="form-produto" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium mb-1">Nome do Produto</label>
+                <input type="text" id="prod-nome" placeholder="Ex: Camisa YCSM" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Tamanho</label>
+                <select id="prod-tamanho" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                  <option value="PP">PP</option>
+                  <option value="P">P</option>
+                  <option value="M">M</option>
+                  <option value="G" selected>G</option>
+                  <option value="GG">GG</option>
+                  <option value="XG">XG</option>
+                  <option value="Único">Único</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-sm font-medium mb-1">Categoria</label>
+                <select id="prod-categoria" class="w-full rounded-lg border border-stone-300 px-3 py-2">
+                  <option value="Vestuário">Vestuário</option>
+                  <option value="Acessórios">Acessórios</option>
+                  <option value="Papelaria">Papelaria</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Preço (R$)</label>
+                <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Qtd. Inicial</label>
+                <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2">
+              </div>
+            </div>
+            <button type="submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition">
+              Adicionar Produto ao Banco
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Tabela Estoque -->
+      <section class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-cangaco-sand flex flex-wrap justify-between items-center gap-3">
+          <h2 class="text-lg font-bold text-cangaco-brown">Estoque Atual</h2>
+          <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar produto..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3">Produto</th>
+                <th class="px-4 py-3">Categoria</th>
+                <th class="px-4 py-3">Tamanho</th>
+                <th class="px-4 py-3">Preço</th>
+                <th class="px-4 py-3">Estoque</th>
+                <th class="px-4 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-produtos" class="divide-y divide-stone-200"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tabela Vendas -->
+      <section class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-cangaco-sand">
+          <h2 class="text-lg font-bold text-cangaco-brown">Histórico de Vendas</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3">Data</th>
+                <th class="px-4 py-3">Produto</th>
+                <th class="px-4 py-3">Qtd</th>
+                <th class="px-4 py-3">Total</th>
+                <th class="px-4 py-3">Pagamento</th>
+                <th class="px-4 py-3">Cliente</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-vendas" class="divide-y divide-stone-200"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let modoAuthAtual = 'login';
+    let produtos = [];
+    let vendas = [];
+
+    function mudarModoAuth(modo) {
+      modoAuthAtual = modo;
+      const titulo = document.getElementById('auth-title');
+      const subtitulo = document.getElementById('auth-subtitle');
+      const campoNome = document.getElementById('campo-nome-div');
+      const labelSenha = document.getElementById('label-senha');
+      const btn = document.getElementById('auth-btn');
+      const linkEsqueci = document.getElementById('link-esqueci');
+      const linkCadastro = document.getElementById('link-cadastro');
+      const linkVoltar = document.getElementById('link-voltar');
+      document.getElementById('auth-erro').classList.add('hidden');
+
+      if (modo === 'login') {
+        titulo.textContent = 'PyLadies Fortaleza';
+        subtitulo.textContent = 'Entre com sua conta para gerenciar o estoque';
+        campoNome.classList.add('hidden');
+        labelSenha.textContent = 'Senha';
+        btn.textContent = 'Entrar no Sistema';
+        linkEsqueci.classList.remove('hidden');
+        linkCadastro.classList.remove('hidden');
+        linkVoltar.classList.add('hidden');
+      } else if (modo === 'cadastro') {
+        titulo.textContent = 'Criar Nova Conta';
+        subtitulo.textContent = 'Cadastre-se para acessar o sistema';
+        campoNome.classList.remove('hidden');
+        labelSenha.textContent = 'Senha';
+        btn.textContent = 'Cadastrar Conta';
+        linkEsqueci.classList.add('hidden');
+        linkCadastro.classList.add('hidden');
+        linkVoltar.classList.remove('hidden');
+      } else if (modo === 'esqueci') {
+        titulo.textContent = 'Recuperar Senha';
+        subtitulo.textContent = 'Digite seu e-mail e defina uma nova senha';
+        campoNome.classList.add('hidden');
+        labelSenha.textContent = 'Nova Senha';
+        btn.textContent = 'Redefinir Senha';
+        linkEsqueci.classList.add('hidden');
+        linkCadastro.classList.add('hidden');
+        linkVoltar.classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const senha = document.getElementById('auth-senha').value;
+      const nome = document.getElementById('auth-nome').value;
+      const errEl = document.getElementById('auth-erro');
+      errEl.classList.add('hidden');
+
+      let endpointBody = { email, senha };
+      if (modoAuthAtual === 'login') endpointBody.acao = 'login';
+      else if (modoAuthAtual === 'cadastro') {
+        endpointBody.acao = 'cadastro';
+        endpointBody.nome = nome;
+      } else if (modoAuthAtual === 'esqueci') {
+        endpointBody.acao = 'recuperar';
+        endpointBody.novaSenha = senha;
+      }
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(endpointBody)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro na autenticação');
+
+        if (modoAuthAtual === 'esqueci') {
+          alert('Senha redefinida com sucesso! Faça login com a nova senha.');
+          mudarModoAuth('login');
+          return;
+        }
+
+        localStorage.setItem('pyladies_user', JSON.stringify(data));
+        iniciarApp(data);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    });
+
+    function verificarSessao() {
+      const salvo = localStorage.getItem('pyladies_user');
+      if (salvo) iniciarApp(JSON.parse(salvo));
+    }
+
+    function fazerLogout() {
+      localStorage.removeItem('pyladies_user');
+      document.getElementById('app-content').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function iniciarApp(user) {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-content').classList.remove('hidden');
+      document.getElementById('user-logado-nome').textContent = user.nome;
+      carregarDados();
+    }
+
+    const formatarMoeda = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    async function carregarDados() {
+      try {
+        const [resProd, resVendas] = await Promise.all([
+          fetch('/api/produtos'),
+          fetch('/api/vendas')
+        ]);
+        produtos = await resProd.json();
+        vendas = await resVendas.json();
+        renderizarTudo();
+      } catch (err) {
+        console.error('Erro ao carregar dados', err);
+      }
+    }
+
+    function renderizarTudo() {
+      renderizarKPIs();
+      renderizarSelectProdutos();
+      renderizarProdutos();
+      renderizarVendas();
+    }
+
+    function renderizarKPIs() {
+      const totalItens = produtos.reduce((acc, p) => acc + Number(p.estoque), 0);
+      const valorEstoque = produtos.reduce((acc, p) => acc + (Number(p.preco) * Number(p.estoque)), 0);
+      const faturamento = vendas.reduce((acc, v) => acc + Number(v.valor_total), 0);
+      const baixo = produtos.filter(p => Number(p.estoque) < 5).length;
+
+      document.getElementById('kpi-estoque').textContent = totalItens;
+      document.getElementById('kpi-valor-estoque').textContent = formatarMoeda(valorEstoque);
+      document.getElementById('kpi-faturamento').textContent = formatarMoeda(faturamento);
+      document.getElementById('kpi-baixo').textContent = baixo;
+    }
+
+    function renderizarSelectProdutos() {
+      const select = document.getElementById('venda-produto');
+      select.innerHTML = produtos.map(p => `
+        <option value="${p.id}" ${p.estoque <= 0 ? 'disabled' : ''}>
+          ${p.nome} - Tam ${p.tamanho} (${formatarMoeda(p.preco)}) • Disp: ${p.estoque}
+        </option>
+      `).join('');
+    }
+
+    function renderizarProdutos() {
+      const filtro = document.getElementById('busca-produto').value.toLowerCase();
+      const tbody = document.getElementById('tabela-produtos');
+      const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(filtro) || p.tamanho.toLowerCase().includes(filtro));
+
+      tbody.innerHTML = filtrados.map(p => `
+        <tr class="hover:bg-cangaco-cream/50">
+          <td class="px-4 py-3 font-medium">${p.nome}</td>
+          <td class="px-4 py-3 text-stone-600">${p.categoria}</td>
+          <td class="px-4 py-3"><span class="px-2 py-0.5 rounded bg-cangaco-sand text-cangaco-dark font-semibold text-xs">${p.tamanho}</span></td>
+          <td class="px-4 py-3">${formatarMoeda(p.preco)}</td>
+          <td class="px-4 py-3 font-bold ${p.estoque < 5 ? 'text-rose-600' : 'text-emerald-700'}">${p.estoque} un.</td>
+          <td class="px-4 py-3 text-right space-x-1">
+            <button onclick="ajustarEstoque(${p.id}, ${Number(p.estoque) + 1})" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold">+1</button>
+            <button onclick="ajustarEstoque(${p.id}, ${Math.max(0, Number(p.estoque) - 1)})" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold">-1</button>
+            <button onclick="excluirProduto(${p.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderizarVendas() {
+      const tbody = document.getElementById('tabela-vendas');
+      tbody.innerHTML = vendas.map(v => `
+        <tr class="hover:bg-cangaco-cream/50">
+          <td class="px-4 py-3 text-stone-600">${new Date(v.data_venda).toLocaleString('pt-BR')}</td>
+          <td class="px-4 py-3 font-medium">${v.produto_nome}</td>
+          <td class="px-4 py-3">${v.quantidade}</td>
+          <td class="px-4 py-3 font-semibold text-emerald-700">${formatarMoeda(v.valor_total)}</td>
+          <td class="px-4 py-3">${v.pagamento}</td>
+          <td class="px-4 py-3 text-stone-600">${v.cliente}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('form-produto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch('/api/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: document.getElementById('prod-nome').value,
+          categoria: document.getElementById('prod-categoria').value,
+          tamanho: document.getElementById('prod-tamanho').value,
+          preco: document.getElementById('prod-preco').value,
+          estoque: document.getElementById('prod-estoque').value
+        })
+      });
+      e.target.reset();
+      await carregarDados();
+    });
+
+    document.getElementById('form-venda').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/vendas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          produto_id: document.getElementById('venda-produto').value,
+          quantidade: document.getElementById('venda-qtd').value,
+          pagamento: document.getElementById('venda-pagamento').value,
+          cliente: document.getElementById('venda-cliente').value
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Erro ao registrar venda');
+      }
+      e.target.reset();
+      await carregarDados();
+    });
+
+    async function ajustarEstoque(id, novoEstoque) {
+      await fetch('/api/produtos', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, estoque: novoEstoque })
+      });
+      await carregarDados();
+    }
+
+    async function excluirProduto(id) {
+      if (!confirm('Deseja realmente excluir este item?')) return;
+      await fetch(`/api/produtos?id=${id}`, { method: 'DELETE' });
+      await carregarDados();
+    }
+
+    // EXPORTAÇÃO CSV ESTOQUE
+    function exportarCSVEstoque() {
+      const linhas = [['ID', 'Produto', 'Categoria', 'Tamanho', 'Preco_Unitario', 'Estoque_Atual', 'Valor_Total_Estoque']];
+      produtos.forEach(p => {
+        const total = (Number(p.preco) * Number(p.estoque)).toFixed(2);
+        linhas.push([p.id, `"${p.nome}"`, `"${p.categoria}"`, p.tamanho, Number(p.preco).toFixed(2), p.estoque, total]);
+      });
+      baixarCSV(linhas, 'estoque_pyladies_fortaleza.csv');
+    }
+
+    // EXPORTAÇÃO CSV VENDAS
+    function exportarCSVVendas() {
+      const linhas = [['ID_Venda', 'Data', 'Produto', 'Quantidade', 'Valor_Total', 'Pagamento', 'Cliente']];
+      vendas.forEach(v => {
+        linhas.push([
+          v.id,
+          new Date(v.data_venda).toLocaleString('pt-BR'),
+          `"${v.produto_nome}"`,
+          v.quantidade,
+          Number(v.valor_total).toFixed(2),
+          v.pagamento,
+          `"${v.cliente}"`
+        ]);
+      });
+      baixarCSV(linhas, 'vendas_pyladies_fortaleza.csv');
+    }
+
+    function baixarCSV(linhas, nomeArquivo) {
+      const csvContent = '\uFEFF' + linhas.map(e => e.join(';')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', nomeArquivo);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    // EXPORTAÇÃO PDF CONSOLIDADO
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFillColor(61, 21, 8);
+      doc.rect(0, 0, 210, 28, 'F');
+      doc.setTextColor(253, 248, 242);
+      doc.setFontSize(16);
+      doc.text('PyLadies Fortaleza — Relatório de Estoque & Vendas', 14, 15);
+      doc.setFontSize(9);
+      doc.text(`Emitido em: ${new Date().toLocaleString('pt-BR')}`, 14, 22);
+
+      doc.setTextColor(61, 21, 8);
+      doc.setFontSize(12);
+      doc.text('1. Inventário Atual', 14, 38);
+
+      doc.autoTable({
+        startY: 42,
+        head: [['Produto', 'Categoria', 'Tam.', 'Preço', 'Qtd.', 'Total']],
+        body: produtos.map(p => [
+          p.nome,
+          p.categoria,
+          p.tamanho,
+          formatarMoeda(p.preco),
+          p.estoque,
+          formatarMoeda(Number(p.preco) * Number(p.estoque))
+        ]),
+        headStyles: { fillColor: [107, 52, 16] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 12;
+      doc.text('2. Histórico de Vendas', 14, finalY);
+
+      doc.autoTable({
+        startY: finalY + 4,
+        head: [['Data', 'Produto', 'Qtd', 'Total', 'Pagamento', 'Cliente']],
+        body: vendas.map(v => [
+          new Date(v.data_venda).toLocaleDateString('pt-BR'),
+          v.produto_nome,
+          v.quantidade,
+          formatarMoeda(v.valor_total),
+          v.pagamento,
+          v.cliente
+        ]),
+        headStyles: { fillColor: [139, 69, 19] }
+      });
+
+      doc.save('relatorio_pyladies_fortaleza.pdf');
+    }
+
+    verificarSessao();
+  </script>
+</body>
+</html>
