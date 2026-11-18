@@ -30,8 +30,8 @@
 </head>
 <body class="bg-cangaco-cream text-cangaco-dark min-h-screen font-sans flex flex-col justify-between selection:bg-cangaco-gold selection:text-cangaco-dark">
 
-  <!-- Toast Notification -->
-  <div id="toast" role="status" aria-live="polite" class="fixed top-5 right-5 z-50 transform transition-all duration-300 ease-out translate-y-[-120%] opacity-0 pointer-events-none text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+  <!-- Toast Notification Flutuante -->
+  <div id="toast" role="status" aria-live="polite" class="fixed top-5 right-5 z-50 transform transition-all duration-300 ease-out translate-y-[-140%] opacity-0 pointer-events-none text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
     <span id="toast-icon" class="text-lg font-bold"></span>
     <span id="toast-msg" class="text-sm font-medium"></span>
   </div>
@@ -87,100 +87,181 @@
 
   <!-- CONTEÚDO PRINCIPAL DO SISTEMA -->
   <div id="app-content" class="hidden flex-1 flex flex-col">
-    <header class="bg-cangaco-dark text-cangaco-cream shadow-md" role="banner">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+    <header class="bg-cangaco-dark text-cangaco-cream shadow-md border-b border-cangaco-brown" role="banner">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full overflow-hidden shadow bg-white border-2 border-cangaco-gold p-0.5 flex items-center justify-center">
+          <div class="w-10 h-10 rounded-full overflow-hidden shadow bg-white border-2 border-cangaco-gold p-0.5 flex items-center justify-center">
             <img id="header-logo-img" src="/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-full h-full object-contain">
           </div>
           <div>
-            <h1 class="text-xl font-bold tracking-tight">PyLadies Fortaleza</h1>
-            <p class="text-xs text-cangaco-sand">Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span> <span id="user-logado-badge" class="ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-cangaco-sand/20 text-cangaco-sand"></span></p>
+            <h1 class="text-lg font-bold tracking-tight">PyLadies Fortaleza</h1>
+            <p class="text-xs text-cangaco-sand">
+              Logada como: <span id="user-logado-nome" class="font-semibold text-cangaco-gold"></span> 
+              <span id="user-logado-badge" class="ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-500/20 text-cangaco-gold border border-cangaco-gold/30"></span>
+            </p>
           </div>
         </div>
-        <nav aria-label="Ações de Relatório e Sessão" class="flex flex-wrap items-center gap-2">
-          <!-- Botão exclusivo para Administradoras -->
-          <button id="btn-gerenciar-usuarios" onclick="abrirModalUsuarios()" aria-label="Gerenciar usuárias e permissões" class="hidden bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold items-center gap-1.5">
-            👥 Usuárias <span id="badge-pendentes" class="bg-amber-400 text-stone-900 px-1.5 py-0.2 rounded-full text-xs font-bold hidden">0</span>
-          </button>
 
-          <button onclick="exportarCSVEstoque()" aria-label="Exportar planilha de estoque em CSV" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold">
-            CSV Estoque
+        <div class="flex items-center gap-2">
+          <button onclick="exportarPDF()" aria-label="Emitir relatório consolidado em PDF" class="bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg transition shadow focus:ring-2 focus:ring-amber-700">
+            📄 Relatório PDF
           </button>
-          <button onclick="exportarCSVVendas()" aria-label="Exportar histórico de vendas em CSV" class="bg-cangaco-sand hover:bg-amber-200 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-cangaco-gold">
-            CSV Vendas
-          </button>
-          <button onclick="exportarPDF()" aria-label="Emitir relatório consolidado em PDF" class="bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-semibold text-xs sm:text-sm px-3 py-2 rounded-lg transition focus:ring-2 focus:ring-amber-700">
-            Relatório PDF
-          </button>
-          <button onclick="fazerLogout()" aria-label="Sair do sistema" class="bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs sm:text-sm px-3 py-2 rounded-lg border border-rose-700 transition focus:ring-2 focus:ring-rose-500">
+          <button onclick="fazerLogout()" aria-label="Sair do sistema" class="bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs sm:text-sm px-3 py-1.5 rounded-lg border border-rose-700/60 transition focus:ring-2 focus:ring-rose-500">
             Sair
           </button>
-        </nav>
+        </div>
       </div>
+
+      <!-- BARRA DE ABAS (TABS NAVIGATION) -->
+      <nav class="max-w-7xl mx-auto px-4 flex gap-1 border-t border-cangaco-brown/50 overflow-x-auto" aria-label="Navegação por Abas">
+        <button id="tab-btn-dashboard" onclick="alternarAba('dashboard')" class="tab-btn flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-cangaco-gold text-cangaco-gold bg-amber-950/40">
+          <span>📊</span>
+          <span>Painel Geral</span>
+        </button>
+
+        <button id="tab-btn-vendas" onclick="alternarAba('vendas')" class="tab-btn flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-transparent text-stone-300 hover:text-white hover:bg-amber-950/20">
+          <span>🛍️</span>
+          <span>Vendas & Caixa</span>
+        </button>
+
+        <button id="tab-btn-estoque" onclick="alternarAba('estoque')" class="tab-btn flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-transparent text-stone-300 hover:text-white hover:bg-amber-950/20">
+          <span>📦</span>
+          <span>Gestão de Estoque</span>
+        </button>
+
+        <button id="tab-btn-usuarios" onclick="alternarAba('usuarios')" class="tab-btn hidden items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-transparent text-stone-300 hover:text-white hover:bg-amber-950/20">
+          <span>👥</span>
+          <span>Usuárias</span>
+          <span id="badge-pendentes-aba" class="bg-amber-400 text-stone-900 text-[10px] px-1.5 py-0.2 rounded-full font-bold hidden animate-pulse">0</span>
+        </button>
+      </nav>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-6 space-y-6 flex-1 w-full" role="main">
-      <!-- Banner Destacado de Administradora -->
-      <section id="banner-admin" class="hidden bg-gradient-to-r from-amber-50 to-amber-100/70 border border-amber-300/80 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-xl shadow-inner">
-            👥
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full" role="main">
+
+      <!-- ========================================== -->
+      <!-- ABA 1: PAINEL GERAL (DASHBOARD)            -->
+      <!-- ========================================== -->
+      <section id="aba-dashboard" class="space-y-6">
+        <!-- Banner de Boas-Vindas Admin (Se houver pendências) -->
+        <div id="banner-admin-pendencias" class="hidden bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-300 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <h3 class="font-bold text-amber-900 text-sm">Novos Cadastros Aguardando Aprovação</h3>
+              <p id="texto-alerta-pendencias" class="text-xs text-amber-800">Existem novas voluntárias aguardando liberação de acesso ao sistema.</p>
+            </div>
           </div>
-          <div>
-            <h3 class="font-bold text-cangaco-brown text-sm">Painel de Administradora</h3>
-            <p id="texto-pendencias-admin" class="text-xs text-stone-600">Aprove novas voluntárias e controle os acessos ao estoque.</p>
+          <button onclick="alternarAba('usuarios')" class="bg-cangaco-brown hover:bg-cangaco-dark text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow">
+            Ver e Aprovar Usuárias
+          </button>
+        </div>
+
+        <!-- KPIs de Alto Impacto -->
+        <section aria-label="Indicadores de Desempenho" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Itens em Estoque</p>
+              <span class="text-lg">📦</span>
+            </div>
+            <p id="kpi-estoque" class="text-2xl font-bold mt-2">0</p>
+            <p class="text-[11px] text-stone-500 mt-1">Total de unidades disponíveis</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Valor em Estoque</p>
+              <span class="text-lg">🏷️</span>
+            </div>
+            <p id="kpi-valor-estoque" class="text-2xl font-bold mt-2">R$ 0,00</p>
+            <p class="text-[11px] text-stone-500 mt-1">Patrimônio estimado em produtos</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Faturamento Total</p>
+              <span class="text-lg">💰</span>
+            </div>
+            <p id="kpi-faturamento" class="text-2xl font-bold text-emerald-700 mt-2">R$ 0,00</p>
+            <p class="text-[11px] text-stone-500 mt-1">Total arrecadado em vendas</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm hover:shadow transition">
+            <div class="flex items-center justify-between">
+              <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Estoque Crítico</p>
+              <span class="text-lg">⚠️</span>
+            </div>
+            <p id="kpi-baixo" class="text-2xl font-bold text-rose-700 mt-2">0</p>
+            <p class="text-[11px] text-stone-500 mt-1">Produtos com menos de 5 unidades</p>
+          </div>
+        </section>
+
+        <!-- Grade de Ações Rápidas & Resumo -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Atalhos Operacionais -->
+          <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm space-y-4">
+            <h2 class="text-base font-bold text-cangaco-brown border-b border-cangaco-sand pb-2">Acesso Rápido</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button onclick="alternarAba('vendas')" class="p-4 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition group">
+                <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">🛍️</span>
+                <p class="font-bold text-sm text-cangaco-dark">Registrar Venda (PDV)</p>
+                <p class="text-xs text-stone-600 mt-0.5">Realizar baixa rápida no caixa</p>
+              </button>
+
+              <button onclick="abrirModalProduto()" class="p-4 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition group">
+                <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">➕</span>
+                <p class="font-bold text-sm text-cangaco-dark">Cadastrar Novo Produto</p>
+                <p class="text-xs text-stone-600 mt-0.5">Adicionar novo item ao estoque</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Produtos com Estoque Baixo / Crítico -->
+          <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm space-y-3">
+            <div class="flex justify-between items-center border-b border-cangaco-sand pb-2">
+              <h2 class="text-base font-bold text-cangaco-brown">Alerta de Reposição (&lt; 5 un.)</h2>
+              <button onclick="alternarAba('estoque')" class="text-xs text-cangaco-leather hover:underline font-semibold">Ver Todos</button>
+            </div>
+            <div id="lista-estoque-critico" class="divide-y divide-stone-100 max-h-48 overflow-y-auto">
+              <p class="text-xs text-stone-500 py-3 text-center">Nenhum produto em nível crítico.</p>
+            </div>
           </div>
         </div>
-        <button onclick="abrirModalUsuarios()" class="bg-cangaco-brown hover:bg-cangaco-dark text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
-          <span>Gerenciar Usuárias</span>
-          <span id="badge-pendentes-banner" class="bg-amber-400 text-stone-900 px-1.5 py-0.2 rounded-full text-xs font-bold hidden">0</span>
-        </button>
       </section>
 
-      <!-- KPIs -->
-      <section aria-label="Indicadores de Desempenho" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
-          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Itens em Estoque</p>
-          <p id="kpi-estoque" class="text-2xl font-bold mt-1">0</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
-          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Valor em Estoque</p>
-          <p id="kpi-valor-estoque" class="text-2xl font-bold mt-1">R$ 0,00</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
-          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Total Vendido</p>
-          <p id="kpi-faturamento" class="text-2xl font-bold text-emerald-700 mt-1">R$ 0,00</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
-          <p class="text-xs uppercase tracking-wider text-cangaco-brown font-semibold">Estoque Baixo (&lt; 5)</p>
-          <p id="kpi-baixo" class="text-2xl font-bold text-rose-700 mt-1">0</p>
-        </div>
-      </section>
+      <!-- ========================================== -->
+      <!-- ABA 2: VENDAS & CAIXA (PDV)                -->
+      <!-- ========================================== -->
+      <section id="aba-vendas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Coluna 1: Formulário PDV -->
+        <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm h-fit space-y-4">
+          <div class="border-b border-cangaco-sand pb-3">
+            <h2 class="text-base font-bold text-cangaco-brown flex items-center gap-2">
+              <span>🛒</span> Registrar Venda
+            </h2>
+            <p class="text-xs text-stone-500">Operação rápida de saída no estoque</p>
+          </div>
 
-      <!-- Formulários -->
-      <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Registrar Venda -->
-        <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
-          <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Registrar Nova Venda</h2>
           <form id="form-venda" class="space-y-4" novalidate>
             <div>
-              <label for="venda-produto" class="block text-sm font-medium mb-1">Produto</label>
-              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 bg-cangaco-cream/40 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+              <label for="venda-produto" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Produto *</label>
+              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm bg-cangaco-cream/40 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                 <option value="">Carregando produtos...</option>
               </select>
             </div>
+
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <div class="flex justify-between items-center mb-1">
-                  <label for="venda-qtd" class="block text-sm font-medium">Quantidade</label>
-                  <span id="venda-disp-badge" class="text-xs text-stone-500 font-medium"></span>
+                  <label for="venda-qtd" class="block text-xs font-semibold uppercase text-stone-700">Qtd *</label>
+                  <span id="venda-disp-badge" class="text-[11px] text-amber-800 font-bold"></span>
                 </div>
-                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
               </div>
+
               <div>
-                <label for="venda-pagamento" class="block text-sm font-medium mb-1">Pagamento</label>
-                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+                <label for="venda-pagamento" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Pagamento</label>
+                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                   <option value="Pix">Pix</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
@@ -188,164 +269,225 @@
                 </select>
               </div>
             </div>
+
             <div>
-              <label for="venda-cliente" class="block text-sm font-medium mb-1">Compradora / Cliente (opcional)</label>
-              <input type="text" id="venda-cliente" placeholder="Ex: Maria Silva" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+              <label for="venda-cliente" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Cliente / Compradora (opcional)</label>
+              <input type="text" id="venda-cliente" placeholder="Ex: Mariazinha" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
             </div>
-            <button type="submit" id="btn-venda-submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-60 disabled:cursor-not-allowed">
-              Confirmar Venda e Abater Estoque
+
+            <!-- Resumo Financeiro Dinâmico -->
+            <div class="bg-stone-50 p-3.5 rounded-lg border border-stone-200 flex justify-between items-center">
+              <span class="text-xs font-medium text-stone-600">Total a Pagar:</span>
+              <span id="venda-total-preview" class="text-lg font-bold text-emerald-700">R$ 0,00</span>
+            </div>
+
+            <button type="submit" id="btn-venda-submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-bold py-2.5 rounded-lg transition shadow focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-60 disabled:cursor-not-allowed">
+              Confirmar Venda e Baixar Estoque
             </button>
           </form>
         </div>
 
-        <!-- Cadastrar Produto -->
-        <div class="bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm">
-          <h2 class="text-lg font-bold text-cangaco-brown mb-4 border-b border-cangaco-sand pb-2">Cadastrar Produto no Estoque</h2>
-          <form id="form-produto" class="space-y-4" novalidate>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="sm:col-span-2">
-                <label for="prod-nome" class="block text-sm font-medium mb-1">Nome do Produto</label>
-                <input type="text" id="prod-nome" placeholder="Ex: Camiseta PyLadies" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-              </div>
-              <div>
-                <label for="prod-tamanho" class="block text-sm font-medium mb-1">Tamanho</label>
-                <select id="prod-tamanho" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-                  <option value="PP">PP</option>
-                  <option value="P">P</option>
-                  <option value="M">M</option>
-                  <option value="G" selected>G</option>
-                  <option value="GG">GG</option>
-                  <option value="XG">XG</option>
-                  <option value="Único">Único</option>
-                </select>
-              </div>
+        <!-- Coluna 2: Histórico Recente de Vendas -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden flex flex-col">
+          <div class="p-4 border-b border-cangaco-sand flex flex-wrap justify-between items-center gap-2">
+            <div>
+              <h2 class="text-base font-bold text-cangaco-brown">Histórico de Vendas</h2>
+              <p class="text-xs text-stone-500">Transações recentes registradas no sistema</p>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label for="prod-categoria" class="block text-sm font-medium mb-1">Categoria</label>
-                <select id="prod-categoria" class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-                  <option value="Vestuário">Vestuário</option>
-                  <option value="Acessórios">Acessórios</option>
-                  <option value="Papelaria">Papelaria</option>
-                  <option value="Outros">Outros</option>
-                </select>
-              </div>
-              <div>
-                <label for="prod-preco" class="block text-sm font-medium mb-1">Preço (R$)</label>
-                <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-              </div>
-              <div>
-                <label for="prod-estoque" class="block text-sm font-medium mb-1">Qtd. Inicial</label>
-                <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-              </div>
-            </div>
-            <button type="submit" id="btn-prod-submit" class="w-full bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold py-2.5 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-leather disabled:opacity-60 disabled:cursor-not-allowed">
-              Adicionar Produto ao Banco
+            <button onclick="exportarCSVVendas()" class="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs rounded-lg transition">
+              📥 Exportar CSV Vendas
             </button>
-          </form>
-        </div>
-      </section>
+          </div>
 
-      <!-- Tabela Estoque -->
-      <section class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-cangaco-sand flex flex-wrap justify-between items-center gap-3">
-          <h2 class="text-lg font-bold text-cangaco-brown">Estoque Atual</h2>
-          <div>
-            <label for="busca-produto" class="sr-only">Filtrar produto</label>
-            <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Filtrar por nome, categoria ou tam..." class="rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none w-64">
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left text-sm" aria-label="Histórico de Vendas">
+              <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+                <tr>
+                  <th scope="col" class="px-4 py-3">Data/Hora</th>
+                  <th scope="col" class="px-4 py-3">Produto</th>
+                  <th scope="col" class="px-4 py-3">Qtd</th>
+                  <th scope="col" class="px-4 py-3">Total</th>
+                  <th scope="col" class="px-4 py-3">Pagamento</th>
+                  <th scope="col" class="px-4 py-3">Cliente</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-vendas" class="divide-y divide-stone-200"></tbody>
+            </table>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm" aria-label="Tabela de Estoque Atual">
-            <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
-              <tr>
-                <th scope="col" class="px-4 py-3">Produto</th>
-                <th scope="col" class="px-4 py-3">Categoria</th>
-                <th scope="col" class="px-4 py-3">Tamanho</th>
-                <th scope="col" class="px-4 py-3">Preço</th>
-                <th scope="col" class="px-4 py-3">Estoque</th>
-                <th scope="col" class="px-4 py-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabela-produtos" class="divide-y divide-stone-200"></tbody>
-          </table>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- ABA 3: GESTÃO DE ESTOQUE                   -->
+      <!-- ========================================== -->
+      <section id="aba-estoque" class="hidden space-y-4">
+        <!-- Toolbar Superior do Estoque -->
+        <div class="bg-white p-4 rounded-xl border border-cangaco-sand shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div class="relative flex-1 sm:w-64">
+              <input type="text" id="busca-produto" oninput="renderizarProdutos()" placeholder="Buscar por nome ou tam..." class="w-full pl-9 pr-3 py-2 text-sm border border-stone-300 rounded-lg focus:ring-2 focus:ring-cangaco-gold outline-none">
+              <span class="absolute left-3 top-2.5 text-stone-400 text-sm">🔍</span>
+            </div>
+
+            <!-- Filtro de Categoria por Pílulas -->
+            <div class="flex gap-1 overflow-x-auto pb-1 sm:pb-0" id="container-filtros-cat">
+              <button onclick="filtrarCategoria('Todas')" class="btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-cangaco-brown text-white shadow-sm" data-cat="Todas">Todas</button>
+              <button onclick="filtrarCategoria('Vestuário')" class="btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-stone-100 hover:bg-stone-200 text-stone-700" data-cat="Vestuário">Vestuário</button>
+              <button onclick="filtrarCategoria('Acessórios')" class="btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-stone-100 hover:bg-stone-200 text-stone-700" data-cat="Acessórios">Acessórios</button>
+              <button onclick="filtrarCategoria('Papelaria')" class="btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-stone-100 hover:bg-stone-200 text-stone-700" data-cat="Papelaria">Papelaria</button>
+              <button onclick="filtrarCategoria('Outros')" class="btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-stone-100 hover:bg-stone-200 text-stone-700" data-cat="Outros">Outros</button>
+            </div>
+          </div>
+
+          <!-- Ações do Estoque -->
+          <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+            <button onclick="exportarCSVEstoque()" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs rounded-lg transition">
+              📥 Exportar CSV
+            </button>
+            <button onclick="abrirModalProduto()" class="px-4 py-2 bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold text-xs sm:text-sm rounded-lg transition shadow flex items-center gap-1.5">
+              <span>➕</span> Novo Produto
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabela Completa de Produtos -->
+        <div class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm" aria-label="Tabela de Estoque Atual">
+              <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+                <tr>
+                  <th scope="col" class="px-4 py-3">Produto</th>
+                  <th scope="col" class="px-4 py-3">Categoria</th>
+                  <th scope="col" class="px-4 py-3">Tamanho</th>
+                  <th scope="col" class="px-4 py-3">Preço Unitário</th>
+                  <th scope="col" class="px-4 py-3">Estoque</th>
+                  <th scope="col" class="px-4 py-3 text-right">Ações Rápidas</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-produtos" class="divide-y divide-stone-200"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <!-- Tabela Vendas -->
-      <section class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-cangaco-sand">
-          <h2 class="text-lg font-bold text-cangaco-brown">Histórico de Vendas</h2>
+      <!-- ========================================== -->
+      <!-- ABA 4: USUÁRIAS (EXCLUSIVO ADMIN)          -->
+      <!-- ========================================== -->
+      <section id="aba-usuarios" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h2 class="text-base font-bold text-cangaco-brown">Gerenciamento de Usuárias & Acessos</h2>
+            <p class="text-xs text-stone-500">Aprove novas voluntárias e controle os níveis de permissão da comunidade</p>
+          </div>
+          <button onclick="carregarUsuarios()" class="text-xs bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-stone-700 font-medium transition">
+            🔄 Atualizar Lista
+          </button>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm" aria-label="Histórico de Vendas Realizadas">
-            <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
-              <tr>
-                <th scope="col" class="px-4 py-3">Data</th>
-                <th scope="col" class="px-4 py-3">Produto</th>
-                <th scope="col" class="px-4 py-3">Qtd</th>
-                <th scope="col" class="px-4 py-3">Total</th>
-                <th scope="col" class="px-4 py-3">Pagamento</th>
-                <th scope="col" class="px-4 py-3">Cliente</th>
-              </tr>
-            </thead>
-            <tbody id="tabela-vendas" class="divide-y divide-stone-200"></tbody>
-          </table>
+
+        <div class="bg-white rounded-xl border border-cangaco-sand shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm" aria-label="Tabela de Usuárias">
+              <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
+                <tr>
+                  <th scope="col" class="px-4 py-3">Nome</th>
+                  <th scope="col" class="px-4 py-3">E-mail</th>
+                  <th scope="col" class="px-4 py-3">Perfil</th>
+                  <th scope="col" class="px-4 py-3">Status</th>
+                  <th scope="col" class="px-4 py-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-usuarios" class="divide-y divide-stone-200"></tbody>
+            </table>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="bg-cangaco-sand/50 border-t border-cangaco-sand py-4 mt-8" role="contentinfo">
-      <div class="max-w-6xl mx-auto px-4 flex items-center justify-center gap-2 text-xs text-cangaco-brown font-medium">
+      <div class="max-w-7xl mx-auto px-4 flex items-center justify-center gap-2 text-xs text-cangaco-brown font-medium">
         <img src="/logo.png" alt="Logotipo PyLadies Fortaleza" class="w-6 h-6 rounded-full object-contain bg-white p-0.5">
         <span>PyLadies Fortaleza • Sistema de Gestão de Estoque e Vendas</span>
       </div>
     </footer>
   </div>
 
-  <!-- MODAL DE GERENCIAMENTO DE USUÁRIAS (EXCLUSIVO ADMIN) -->
-  <div id="modal-usuarios" role="dialog" aria-modal="true" class="fixed inset-0 bg-stone-900/80 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white max-w-4xl w-full p-6 rounded-2xl shadow-2xl border border-cangaco-sand space-y-5 max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-cangaco-sand pb-3">
+  <!-- ========================================== -->
+  <!-- MODAL: CADASTRAR NOVO PRODUTO              -->
+  <!-- ========================================== -->
+  <div id="modal-produto" role="dialog" aria-modal="true" aria-labelledby="modal-prod-title" class="fixed inset-0 bg-stone-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl border border-cangaco-sand overflow-hidden transform transition-all">
+      <div class="bg-cangaco-dark px-6 py-4 flex items-center justify-between text-white">
         <div>
-          <h3 class="text-lg font-bold text-cangaco-dark">Gerenciamento de Usuárias & Autorizações</h3>
-          <p class="text-xs text-stone-500">Aprove novas voluntárias e controle os acessos ao estoque</p>
+          <h3 id="modal-prod-title" class="text-base font-bold">Cadastrar Novo Produto</h3>
+          <p class="text-xs text-cangaco-sand">Adicione um novo item ao catálogo de estoque</p>
         </div>
-        <button onclick="fecharModalUsuarios()" class="text-stone-400 hover:text-stone-700 text-2xl font-bold p-1 leading-none">&times;</button>
+        <button onclick="fecharModalProduto()" class="text-stone-300 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
       </div>
 
-      <div class="overflow-x-auto flex-1">
-        <table class="w-full text-left text-sm" aria-label="Tabela de Usuárias">
-          <thead class="bg-cangaco-sand/60 text-cangaco-dark uppercase text-xs">
-            <tr>
-              <th scope="col" class="px-3 py-2.5">Nome</th>
-              <th scope="col" class="px-3 py-2.5">E-mail</th>
-              <th scope="col" class="px-3 py-2.5">Perfil</th>
-              <th scope="col" class="px-3 py-2.5">Status</th>
-              <th scope="col" class="px-3 py-2.5 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-usuarios" class="divide-y divide-stone-200"></tbody>
-        </table>
-      </div>
+      <form id="form-produto" class="p-6 space-y-4" novalidate>
+        <div>
+          <label for="prod-nome" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Nome do Produto *</label>
+          <input type="text" id="prod-nome" placeholder="Ex: Camiseta PyLadies Cangaço Tech" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+        </div>
 
-      <div class="border-t border-stone-200 pt-3 flex justify-end">
-        <button onclick="fecharModalUsuarios()" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold rounded-lg text-sm transition">
-          Fechar
-        </button>
-      </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="prod-categoria" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Categoria</label>
+            <select id="prod-categoria" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none bg-white">
+              <option value="Vestuário">Vestuário</option>
+              <option value="Acessórios">Acessórios</option>
+              <option value="Papelaria">Papelaria</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div>
+            <label for="prod-tamanho" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Tamanho</label>
+            <select id="prod-tamanho" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none bg-white">
+              <option value="PP">PP</option>
+              <option value="P">P</option>
+              <option value="M">M</option>
+              <option value="G" selected>G</option>
+              <option value="GG">GG</option>
+              <option value="XG">XG</option>
+              <option value="Único">Único</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="prod-preco" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Preço (R$) *</label>
+            <input type="number" id="prod-preco" step="0.01" min="0" placeholder="55.00" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+          </div>
+          <div>
+            <label for="prod-estoque" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Estoque Inicial *</label>
+            <input type="number" id="prod-estoque" min="0" value="10" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-stone-200 flex justify-end gap-2">
+          <button type="button" onclick="fecharModalProduto()" class="px-4 py-2 text-xs font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-prod-submit" class="px-5 py-2 text-xs font-semibold text-white bg-cangaco-leather hover:bg-cangaco-brown rounded-lg transition shadow disabled:opacity-60">
+            Cadastrar Produto
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
   <script>
     let modoAuthAtual = 'login';
+    let abaAtual = 'dashboard';
+    let categoriaFiltroAtiva = 'Todas';
     let usuarioAtual = null;
     let produtos = [];
     let vendas = [];
     let usuariosLista = [];
     let toastTimeout = null;
 
-    // Função utilitária para prevenir XSS
+    // Utilitário de escape para prevenir XSS
     function escapeHTML(str) {
       if (str === null || str === undefined) return '';
       return String(str)
@@ -374,10 +516,39 @@
       }
 
       toastTimeout = setTimeout(() => {
-        toast.classList.add('translate-y-[-120%]', 'opacity-0');
+        toast.classList.add('translate-y-[-140%]', 'opacity-0');
       }, 4000);
     }
 
+    // ==========================================
+    // SISTEMA DE ABAS (TABS)
+    // ==========================================
+    function alternarAba(abaId) {
+      abaAtual = abaId;
+      const abas = ['dashboard', 'vendas', 'estoque', 'usuarios'];
+
+      abas.forEach(id => {
+        const sec = document.getElementById(`aba-${id}`);
+        const btn = document.getElementById(`tab-btn-${id}`);
+        if (sec && btn) {
+          if (id === abaId) {
+            sec.classList.remove('hidden');
+            btn.className = 'tab-btn flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-cangaco-gold text-cangaco-gold bg-amber-950/40';
+          } else {
+            sec.classList.add('hidden');
+            btn.className = 'tab-btn flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap border-transparent text-stone-300 hover:text-white hover:bg-amber-950/20';
+          }
+        }
+      });
+
+      if (abaId === 'usuarios') {
+        carregarUsuarios();
+      }
+    }
+
+    // ==========================================
+    // AUTENTICAÇÃO
+    // ==========================================
     function mudarModoAuth(modo) {
       modoAuthAtual = modo;
       const titulo = document.getElementById('auth-title');
@@ -461,9 +632,8 @@
       }
 
       const endpointBody = { email, senha };
-      if (modoAuthAtual === 'login') {
-        endpointBody.acao = 'login';
-      } else if (modoAuthAtual === 'cadastro') {
+      if (modoAuthAtual === 'login') endpointBody.acao = 'login';
+      else if (modoAuthAtual === 'cadastro') {
         endpointBody.acao = 'cadastro';
         endpointBody.nome = nome;
       } else if (modoAuthAtual === 'esqueci') {
@@ -490,7 +660,6 @@
           return;
         }
 
-        // Se cadastrou e ficou pendente de aprovação
         if (data.pendente) {
           e.target.reset();
           e.target.classList.add('hidden');
@@ -499,7 +668,6 @@
           return;
         }
 
-        // Se aprovada ou primeira usuária (admin)
         localStorage.setItem('pyladies_user', JSON.stringify(data));
         iniciarApp(data);
       } catch (err) {
@@ -519,7 +687,7 @@
           if (user && user.id) {
             iniciarApp(user);
 
-            // Revalida automaticamente o perfil mais recente no banco de dados
+            // Revalidação em background das permissões mais recentes
             try {
               const res = await fetch('/api/usuarios');
               if (res.ok) {
@@ -531,9 +699,7 @@
                   iniciarApp(user);
                 }
               }
-            } catch (errSync) {
-              console.warn('Erro ao sincronizar perfil:', errSync);
-            }
+            } catch (errSync) {}
           } else {
             fazerLogout();
           }
@@ -560,28 +726,24 @@
       document.getElementById('user-logado-nome').textContent = user.nome || 'Usuária';
       
       const badgePerfil = document.getElementById('user-logado-badge');
-      const btnGerenciar = document.getElementById('btn-gerenciar-usuarios');
-      const bannerAdmin = document.getElementById('banner-admin');
+      const tabUsuarios = document.getElementById('tab-btn-usuarios');
 
       if (user.perfil === 'admin') {
         badgePerfil.textContent = 'Admin';
         badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-500/20 text-cangaco-gold border border-cangaco-gold/40';
-        btnGerenciar.classList.remove('hidden');
-        btnGerenciar.classList.add('flex');
-        if (bannerAdmin) bannerAdmin.classList.remove('hidden');
+        tabUsuarios.classList.remove('hidden');
+        tabUsuarios.classList.add('flex');
         checarPendencias();
       } else {
         badgePerfil.textContent = 'Membro';
         badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-stone-500/20 text-cangaco-sand';
-        btnGerenciar.classList.add('hidden');
-        btnGerenciar.classList.remove('flex');
-        if (bannerAdmin) bannerAdmin.classList.add('hidden');
+        tabUsuarios.classList.add('hidden');
+        tabUsuarios.classList.remove('flex');
       }
 
       carregarDados();
     }
 
-    // Verifica se há usuárias pendentes para notificar no badge do cabeçalho e banner
     async function checarPendencias() {
       if (!usuarioAtual || usuarioAtual.perfil !== 'admin') return;
       try {
@@ -589,38 +751,26 @@
         if (!res.ok) return;
         const lista = await res.json();
         const pendentes = lista.filter(u => u.status === 'pendente').length;
-        const badge = document.getElementById('badge-pendentes');
-        const badgeBanner = document.getElementById('badge-pendentes-banner');
-        const txtPendencias = document.getElementById('texto-pendencias-admin');
+        const badgeAba = document.getElementById('badge-pendentes-aba');
+        const bannerAdmin = document.getElementById('banner-admin-pendencias');
+        const txtPendencias = document.getElementById('texto-alerta-pendencias');
 
         if (pendentes > 0) {
-          badge.textContent = pendentes;
-          badge.classList.remove('hidden');
-          if (badgeBanner) {
-            badgeBanner.textContent = `${pendentes} pendente${pendentes > 1 ? 's' : ''}`;
-            badgeBanner.classList.remove('hidden');
-          }
-          if (txtPendencias) {
-            txtPendencias.textContent = `Atenção: Há ${pendentes} cadastro(s) aguardando sua aprovação!`;
-            txtPendencias.className = 'text-xs text-amber-800 font-bold';
-          }
+          badgeAba.textContent = pendentes;
+          badgeAba.classList.remove('hidden');
+          if (bannerAdmin) bannerAdmin.classList.remove('hidden');
+          if (txtPendencias) txtPendencias.textContent = `Atenção: Há ${pendentes} cadastro(s) aguardando sua aprovação!`;
         } else {
-          badge.classList.add('hidden');
-          if (badgeBanner) badgeBanner.classList.add('hidden');
-          if (txtPendencias) {
-            txtPendencias.textContent = 'Todas as voluntárias cadastradas estão autorizadas.';
-            txtPendencias.className = 'text-xs text-stone-600';
-          }
+          badgeAba.classList.add('hidden');
+          if (bannerAdmin) bannerAdmin.classList.add('hidden');
         }
-      } catch (e) {
-        console.warn('Erro ao verificar pendências:', e);
-      }
+      } catch (e) {}
     }
 
-    const formatarMoeda = (v) => {
-      const num = Number(v) || 0;
-      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
+    // ==========================================
+    // DADOS E RENDERIZAÇÃO
+    // ==========================================
+    const formatarMoeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     async function carregarDados() {
       try {
@@ -629,23 +779,15 @@
           fetch('/api/vendas')
         ]);
 
-        if (!resProd.ok) {
-          const errP = await resProd.json().catch(() => ({}));
-          throw new Error(errP.error || 'Falha ao buscar produtos no banco.');
-        }
-        if (!resVendas.ok) {
-          const errV = await resVendas.json().catch(() => ({}));
-          throw new Error(errV.error || 'Falha ao buscar histórico de vendas.');
-        }
+        if (!resProd.ok) throw new Error('Falha ao buscar produtos.');
+        if (!resVendas.ok) throw new Error('Falha ao buscar vendas.');
 
-        const dataProd = await resProd.json();
-        const dataVendas = await resVendas.json();
+        produtos = await resProd.json();
+        vendas = await resVendas.json();
 
-        produtos = Array.isArray(dataProd) ? dataProd : [];
-        vendas = Array.isArray(dataVendas) ? dataVendas : [];
         renderizarTudo();
       } catch (err) {
-        console.error('Erro ao carregar dados:', err);
+        console.error(err);
         mostrarToast(err.message, 'erro');
       }
     }
@@ -655,6 +797,7 @@
       renderizarSelectProdutos();
       renderizarProdutos();
       renderizarVendas();
+      renderizarEstoqueCritico();
     }
 
     function renderizarKPIs() {
@@ -667,6 +810,31 @@
       document.getElementById('kpi-valor-estoque').textContent = formatarMoeda(valorEstoque);
       document.getElementById('kpi-faturamento').textContent = formatarMoeda(faturamento);
       document.getElementById('kpi-baixo').textContent = baixo;
+    }
+
+    function renderizarEstoqueCritico() {
+      const container = document.getElementById('lista-estoque-critico');
+      const criticos = produtos.filter(p => (Number(p.estoque) || 0) < 5);
+
+      if (criticos.length === 0) {
+        container.innerHTML = '<p class="text-xs text-emerald-700 py-3 text-center font-medium">✓ Todos os produtos estão com estoque seguro.</p>';
+        return;
+      }
+
+      container.innerHTML = criticos.map(p => {
+        const est = Number(p.estoque) || 0;
+        return `
+          <div class="py-2.5 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-stone-800">${escapeHTML(p.nome)} <span class="text-[11px] text-stone-500 font-normal">(${escapeHTML(p.tamanho)})</span></p>
+              <p class="text-[11px] text-stone-500">${escapeHTML(p.categoria)} • ${formatarMoeda(p.preco)}</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-xs font-bold ${est <= 0 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}">
+              ${est <= 0 ? 'Esgotado' : `${est} un.`}
+            </span>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderizarSelectProdutos() {
@@ -691,7 +859,20 @@
       select.innerHTML = options;
     }
 
-    // Monitora seleção de produto para ajustar limites de quantidade
+    // Monitora cálculo dinâmico da venda
+    function atualizarPrecoTotalVenda() {
+      const prodId = Number(document.getElementById('venda-produto').value);
+      const qtd = parseInt(document.getElementById('venda-qtd').value, 10) || 0;
+      const prod = produtos.find(p => p.id === prodId);
+      const preview = document.getElementById('venda-total-preview');
+
+      if (prod && qtd > 0) {
+        preview.textContent = formatarMoeda((Number(prod.preco) || 0) * qtd);
+      } else {
+        preview.textContent = 'R$ 0,00';
+      }
+    }
+
     document.getElementById('venda-produto').addEventListener('change', (e) => {
       const prodId = Number(e.target.value);
       const prod = produtos.find(p => p.id === prodId);
@@ -709,7 +890,26 @@
         badgeDisp.textContent = '';
         qtdInput.removeAttribute('max');
       }
+      atualizarPrecoTotalVenda();
     });
+
+    document.getElementById('venda-qtd').addEventListener('input', atualizarPrecoTotalVenda);
+
+    // ==========================================
+    // TABELA DE ESTOQUE E FILTROS
+    // ==========================================
+    function filtrarCategoria(cat) {
+      categoriaFiltroAtiva = cat;
+      const botoes = document.querySelectorAll('.btn-filtro-cat');
+      botoes.forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = 'btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-cangaco-brown text-white shadow-sm';
+        } else {
+          btn.className = 'btn-filtro-cat px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-stone-100 hover:bg-stone-200 text-stone-700';
+        }
+      });
+      renderizarProdutos();
+    }
 
     function renderizarProdutos() {
       const filtro = (document.getElementById('busca-produto').value || '').trim().toLowerCase();
@@ -718,15 +918,15 @@
       const filtrados = produtos.filter(p => {
         const nomeMatch = p.nome ? p.nome.toLowerCase().includes(filtro) : false;
         const tamMatch = p.tamanho ? p.tamanho.toLowerCase().includes(filtro) : false;
-        const catMatch = p.categoria ? p.categoria.toLowerCase().includes(filtro) : false;
-        return nomeMatch || tamMatch || catMatch;
+        const catMatch = categoriaFiltroAtiva === 'Todas' || p.categoria === categoriaFiltroAtiva;
+        return (nomeMatch || tamMatch) && catMatch;
       });
 
       if (filtrados.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">
-              ${produtos.length === 0 ? 'Nenhum produto cadastrado no estoque ainda.' : 'Nenhum produto corresponde ao filtro.'}
+              ${produtos.length === 0 ? 'Nenhum produto cadastrado no estoque ainda.' : 'Nenhum produto corresponde aos filtros aplicados.'}
             </td>
           </tr>
         `;
@@ -738,21 +938,23 @@
         const preco = Number(p.preco) || 0;
         return `
           <tr class="hover:bg-cangaco-cream/50 transition-colors">
-            <td class="px-4 py-3 font-medium">${escapeHTML(p.nome)}</td>
-            <td class="px-4 py-3 text-stone-600">${escapeHTML(p.categoria)}</td>
+            <td class="px-4 py-3 font-medium text-stone-900">${escapeHTML(p.nome)}</td>
+            <td class="px-4 py-3 text-stone-600 text-xs">${escapeHTML(p.categoria)}</td>
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded bg-cangaco-sand text-cangaco-dark font-semibold text-xs">
+              <span class="px-2 py-0.5 rounded bg-cangaco-sand text-cangaco-dark font-bold text-xs">
                 ${escapeHTML(p.tamanho)}
               </span>
             </td>
-            <td class="px-4 py-3">${formatarMoeda(preco)}</td>
-            <td class="px-4 py-3 font-bold ${estoque <= 0 ? 'text-rose-700' : estoque < 5 ? 'text-amber-600' : 'text-emerald-700'}">
-              ${estoque <= 0 ? 'ESGOTADO' : `${estoque} un.`}
+            <td class="px-4 py-3 font-semibold text-stone-800">${formatarMoeda(preco)}</td>
+            <td class="px-4 py-3">
+              <span class="font-bold text-xs px-2.5 py-1 rounded-full ${estoque <= 0 ? 'bg-rose-100 text-rose-700' : estoque < 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                ${estoque <= 0 ? 'ESGOTADO' : `${estoque} un.`}
+              </span>
             </td>
             <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
-              <button onclick="ajustarEstoque(${p.id}, 1)" title="Aumentar estoque em 1" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold transition focus:ring-1 focus:ring-stone-600">+1</button>
-              <button onclick="ajustarEstoque(${p.id}, -1)" title="Diminuir estoque em 1" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 rounded text-xs font-bold transition focus:ring-1 focus:ring-stone-600" ${estoque <= 0 ? 'disabled' : ''}>-1</button>
-              <button onclick="excluirProduto(${p.id})" title="Excluir produto" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-semibold transition focus:ring-1 focus:ring-rose-500">Excluir</button>
+              <button onclick="ajustarEstoque(${p.id}, 1)" title="Aumentar estoque em 1" class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded text-xs font-bold transition">+1</button>
+              <button onclick="ajustarEstoque(${p.id}, -1)" title="Diminuir estoque em 1" class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded text-xs font-bold transition" ${estoque <= 0 ? 'disabled' : ''}>-1</button>
+              <button onclick="excluirProduto(${p.id})" title="Excluir produto" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded text-xs font-semibold transition">Excluir</button>
             </td>
           </tr>
         `;
@@ -763,13 +965,7 @@
       const tbody = document.getElementById('tabela-vendas');
 
       if (!vendas || vendas.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">
-              Nenhuma venda registrada ainda.
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-stone-500 font-medium">Nenhuma venda registrada ainda.</td></tr>';
         return;
       }
 
@@ -777,22 +973,33 @@
         const dataFormatada = v.data_venda ? new Date(v.data_venda).toLocaleString('pt-BR') : '-';
         return `
           <tr class="hover:bg-cangaco-cream/50 transition-colors">
-            <td class="px-4 py-3 text-stone-600 whitespace-nowrap">${escapeHTML(dataFormatada)}</td>
-            <td class="px-4 py-3 font-medium">${escapeHTML(v.produto_nome)}</td>
+            <td class="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">${escapeHTML(dataFormatada)}</td>
+            <td class="px-4 py-3 font-medium text-stone-900">${escapeHTML(v.produto_nome)}</td>
             <td class="px-4 py-3">${Number(v.quantidade) || 0}</td>
-            <td class="px-4 py-3 font-semibold text-emerald-700">${formatarMoeda(v.valor_total)}</td>
+            <td class="px-4 py-3 font-bold text-emerald-700">${formatarMoeda(v.valor_total)}</td>
             <td class="px-4 py-3">
-              <span class="px-2 py-0.5 rounded bg-cangaco-sand/80 text-cangaco-dark text-xs font-medium">
+              <span class="px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-xs font-medium">
                 ${escapeHTML(v.pagamento)}
               </span>
             </td>
-            <td class="px-4 py-3 text-stone-600">${escapeHTML(v.cliente || 'Não informado')}</td>
+            <td class="px-4 py-3 text-stone-600 text-xs">${escapeHTML(v.cliente || 'Não informado')}</td>
           </tr>
         `;
       }).join('');
     }
 
-    // Formulário de Cadastro de Produto
+    // ==========================================
+    // MODAL DE CADASTRO DE PRODUTO
+    // ==========================================
+    function abrirModalProduto() {
+      document.getElementById('modal-produto').classList.remove('hidden');
+      document.getElementById('prod-nome').focus();
+    }
+
+    function fecharModalProduto() {
+      document.getElementById('modal-produto').classList.add('hidden');
+    }
+
     document.getElementById('form-produto').addEventListener('submit', async (e) => {
       e.preventDefault();
       const nome = document.getElementById('prod-nome').value.trim();
@@ -802,26 +1009,15 @@
       const estoqueStr = document.getElementById('prod-estoque').value;
       const btn = document.getElementById('btn-prod-submit');
 
-      if (!nome) {
-        mostrarToast('Por favor, informe o nome do produto.', 'erro');
-        return;
-      }
-
+      if (!nome) return mostrarToast('Informe o nome do produto.', 'erro');
       const preco = parseFloat(String(precoStr).replace(',', '.'));
-      if (isNaN(preco) || preco < 0) {
-        mostrarToast('Informe um preço válido.', 'erro');
-        return;
-      }
-
+      if (isNaN(preco) || preco < 0) return mostrarToast('Informe um preço válido.', 'erro');
       const estoque = parseInt(estoqueStr, 10);
-      if (isNaN(estoque) || estoque < 0) {
-        mostrarToast('Informe uma quantidade de estoque válida maior ou igual a zero.', 'erro');
-        return;
-      }
+      if (isNaN(estoque) || estoque < 0) return mostrarToast('Informe um estoque válido.', 'erro');
 
       const textoOriginal = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'Salvando produto...';
+      btn.textContent = 'Salvando...';
 
       try {
         const res = await fetch('/api/produtos', {
@@ -835,6 +1031,7 @@
         e.target.reset();
         document.getElementById('prod-estoque').value = '10';
         document.getElementById('prod-tamanho').value = 'G';
+        fecharModalProduto();
         await carregarDados();
         mostrarToast('Produto cadastrado com sucesso!');
       } catch (err) {
@@ -845,7 +1042,9 @@
       }
     });
 
-    // Formulário de Registro de Venda
+    // ==========================================
+    // REGISTRAR VENDA
+    // ==========================================
     document.getElementById('form-venda').addEventListener('submit', async (e) => {
       e.preventDefault();
       const produtoId = document.getElementById('venda-produto').value;
@@ -854,30 +1053,18 @@
       const cliente = document.getElementById('venda-cliente').value.trim();
       const btn = document.getElementById('btn-venda-submit');
 
-      if (!produtoId) {
-        mostrarToast('Selecione um produto da lista.', 'erro');
-        return;
-      }
-
-      if (!qtd || isNaN(qtd) || qtd <= 0) {
-        mostrarToast('Informe uma quantidade válida maior que zero.', 'erro');
-        return;
-      }
+      if (!produtoId) return mostrarToast('Selecione um produto da lista.', 'erro');
+      if (!qtd || isNaN(qtd) || qtd <= 0) return mostrarToast('Informe uma quantidade válida maior que zero.', 'erro');
 
       const textoOriginal = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'Registrando venda...';
+      btn.textContent = 'Processando venda...';
 
       try {
         const res = await fetch('/api/vendas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            produto_id: produtoId,
-            quantidade: qtd,
-            pagamento,
-            cliente
-          })
+          body: JSON.stringify({ produto_id: produtoId, quantidade: qtd, pagamento, cliente })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Erro ao registrar venda.');
@@ -885,6 +1072,7 @@
         e.target.reset();
         document.getElementById('venda-qtd').value = '1';
         document.getElementById('venda-disp-badge').textContent = '';
+        document.getElementById('venda-total-preview').textContent = 'R$ 0,00';
         await carregarDados();
         mostrarToast('Venda registrada e estoque atualizado com sucesso!');
       } catch (err) {
@@ -895,7 +1083,7 @@
       }
     });
 
-    // Ajustar estoque via delta atômico
+    // Ajustar estoque via delta
     async function ajustarEstoque(id, delta) {
       try {
         const res = await fetch('/api/produtos', {
@@ -912,11 +1100,9 @@
       }
     }
 
-    // Excluir produto com confirmação e tratamento de erros
     async function excluirProduto(id) {
       const prod = produtos.find(p => p.id === id);
       const nomeProd = prod ? prod.nome : 'este produto';
-
       if (!confirm(`Deseja realmente excluir "${nomeProd}" do estoque?`)) return;
 
       try {
@@ -932,46 +1118,37 @@
     }
 
     // ==========================================
-    // GERENCIAMENTO DE USUÁRIAS (EXCLUSIVO ADMIN)
+    // ABA USUÁRIAS (ADMIN)
     // ==========================================
-    async function abrirModalUsuarios() {
-      document.getElementById('modal-usuarios').classList.remove('hidden');
-      await carregarUsuarios();
-    }
-
-    function fecharModalUsuarios() {
-      document.getElementById('modal-usuarios').classList.add('hidden');
-      checarPendencias();
-    }
-
     async function carregarUsuarios() {
       const tbody = document.getElementById('tabela-usuarios');
-      tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-stone-500">Carregando lista de usuárias...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-stone-500">Carregando lista de usuárias...</td></tr>';
 
       try {
         const res = await fetch('/api/usuarios');
         if (!res.ok) throw new Error('Não foi possível carregar as usuárias.');
         usuariosLista = await res.json();
         renderizarTabelaUsuarios();
+        checarPendencias();
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-rose-600">${escapeHTML(err.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-rose-600">${escapeHTML(err.message)}</td></tr>`;
       }
     }
 
     function renderizarTabelaUsuarios() {
       const tbody = document.getElementById('tabela-usuarios');
       if (usuariosLista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-stone-500">Nenhuma usuária cadastrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-stone-500">Nenhuma usuária cadastrada.</td></tr>';
         return;
       }
 
       tbody.innerHTML = usuariosLista.map(u => {
         const isSelf = usuarioAtual && (usuarioAtual.id === u.id || (usuarioAtual.email && usuarioAtual.email.toLowerCase() === u.email.toLowerCase()));
         const statusBadge = u.status === 'aprovado' 
-          ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Aprovada</span>'
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Aprovada</span>'
           : u.status === 'pendente'
-          ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 animate-pulse">Pendente</span>'
-          : '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800">Bloqueada</span>';
+          ? '<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 animate-pulse">Pendente</span>'
+          : '<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">Bloqueada</span>';
 
         const perfilBadge = u.perfil === 'admin'
           ? '<span class="font-bold text-cangaco-brown">Admin</span>'
@@ -979,25 +1156,25 @@
 
         return `
           <tr class="hover:bg-cangaco-cream/40">
-            <td class="px-3 py-3 font-medium">${escapeHTML(u.nome)} ${isSelf ? '<span class="text-xs text-cangaco-gold font-bold">(Você)</span>' : ''}</td>
-            <td class="px-3 py-3 text-stone-600 text-xs">${escapeHTML(u.email)}</td>
-            <td class="px-3 py-3">${perfilBadge}</td>
-            <td class="px-3 py-3">${statusBadge}</td>
-            <td class="px-3 py-3 text-right space-x-1 whitespace-nowrap">
+            <td class="px-4 py-3 font-medium text-stone-900">${escapeHTML(u.nome)} ${isSelf ? '<span class="text-xs text-cangaco-gold font-bold ml-1">(Você)</span>' : ''}</td>
+            <td class="px-4 py-3 text-stone-600 text-xs">${escapeHTML(u.email)}</td>
+            <td class="px-4 py-3">${perfilBadge}</td>
+            <td class="px-4 py-3">${statusBadge}</td>
+            <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
               ${u.status === 'pendente' ? `
-                <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition">Aprovar</button>
-                <button onclick="excluirUsuario(${u.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-semibold transition">Recusar</button>
+                <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">Aprovar</button>
+                <button onclick="excluirUsuario(${u.id})" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-xs font-semibold transition">Recusar</button>
               ` : `
                 ${!isSelf ? `
                   ${u.status === 'aprovado' ? `
-                    <button onclick="alterarStatusUsuario(${u.id}, 'bloqueado')" class="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-xs font-medium transition">Bloquear</button>
+                    <button onclick="alterarStatusUsuario(${u.id}, 'bloqueado')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-medium transition">Bloquear</button>
                   ` : `
-                    <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded text-xs font-medium transition">Reativar</button>
+                    <button onclick="alterarStatusUsuario(${u.id}, 'aprovado')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-medium transition">Reativar</button>
                   `}
-                  <button onclick="alternarPerfilUsuario(${u.id}, '${u.perfil === 'admin' ? 'membro' : 'admin'}')" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded text-xs font-medium transition">
+                  <button onclick="alternarPerfilUsuario(${u.id}, '${u.perfil === 'admin' ? 'membro' : 'admin'}')" class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-xs font-medium transition">
                     ${u.perfil === 'admin' ? 'Tornar Membro' : 'Tornar Admin'}
                   </button>
-                  <button onclick="excluirUsuario(${u.id})" class="px-2 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded text-xs font-medium transition">Excluir</button>
+                  <button onclick="excluirUsuario(${u.id})" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-medium transition">Excluir</button>
                 ` : '<span class="text-xs text-stone-400 italic">Sua conta</span>'}
               `}
             </td>
@@ -1018,7 +1195,6 @@
 
         mostrarToast(`Usuária ${novoStatus === 'aprovado' ? 'aprovada' : 'bloqueada'} com sucesso!`);
         await carregarUsuarios();
-        checarPendencias();
       } catch (err) {
         mostrarToast(err.message, 'erro');
       }
@@ -1044,7 +1220,7 @@
     async function excluirUsuario(id) {
       const u = usuariosLista.find(item => item.id === id);
       const nome = u ? u.nome : 'esta usuária';
-      if (!confirm(`Deseja realmente remover o acesso de "${nome}"?`)) return;
+      if (!confirm(`Deseja realmente remover "${nome}"?`)) return;
 
       try {
         const res = await fetch(`/api/usuarios?id=${id}`, { method: 'DELETE' });
@@ -1053,7 +1229,6 @@
 
         mostrarToast('Usuária removida com sucesso!');
         await carregarUsuarios();
-        checarPendencias();
       } catch (err) {
         mostrarToast(err.message, 'erro');
       }
@@ -1069,46 +1244,23 @@
     }
 
     function exportarCSVEstoque() {
-      if (produtos.length === 0) {
-        mostrarToast('Não há produtos cadastrados para exportar.', 'erro');
-        return;
-      }
+      if (produtos.length === 0) return mostrarToast('Não há produtos para exportar.', 'erro');
       const linhas = [['ID', 'Produto', 'Categoria', 'Tamanho', 'Preco_Unitario', 'Estoque_Atual', 'Valor_Total_Estoque']];
       produtos.forEach(p => {
         const preco = Number(p.preco) || 0;
         const estoque = Number(p.estoque) || 0;
-        const total = (preco * estoque).toFixed(2);
-        linhas.push([
-          p.id,
-          escapeCSV(p.nome),
-          escapeCSV(p.categoria),
-          escapeCSV(p.tamanho),
-          preco.toFixed(2),
-          estoque,
-          total
-        ]);
+        linhas.push([p.id, escapeCSV(p.nome), escapeCSV(p.categoria), escapeCSV(p.tamanho), preco.toFixed(2), estoque, (preco * estoque).toFixed(2)]);
       });
       baixarCSV(linhas, 'estoque_pyladies_fortaleza.csv');
       mostrarToast('Planilha de estoque exportada!');
     }
 
     function exportarCSVVendas() {
-      if (vendas.length === 0) {
-        mostrarToast('Não há vendas registradas para exportar.', 'erro');
-        return;
-      }
+      if (vendas.length === 0) return mostrarToast('Não há vendas para exportar.', 'erro');
       const linhas = [['ID_Venda', 'Data', 'Produto', 'Quantidade', 'Valor_Total', 'Pagamento', 'Cliente']];
       vendas.forEach(v => {
         const dataFormatada = v.data_venda ? new Date(v.data_venda).toLocaleString('pt-BR') : '-';
-        linhas.push([
-          v.id,
-          escapeCSV(dataFormatada),
-          escapeCSV(v.produto_nome),
-          Number(v.quantidade) || 0,
-          (Number(v.valor_total) || 0).toFixed(2),
-          escapeCSV(v.pagamento),
-          escapeCSV(v.cliente || 'Não informado')
-        ]);
+        linhas.push([v.id, escapeCSV(dataFormatada), escapeCSV(v.produto_nome), Number(v.quantidade) || 0, (Number(v.valor_total) || 0).toFixed(2), escapeCSV(v.pagamento), escapeCSV(v.cliente || 'Não informado')]);
       });
       baixarCSV(linhas, 'vendas_pyladies_fortaleza.csv');
       mostrarToast('Histórico de vendas exportado!');
@@ -1128,11 +1280,7 @@
     }
 
     function exportarPDF() {
-      if (!window.jspdf || !window.jspdf.jsPDF) {
-        mostrarToast('Biblioteca PDF ainda carregando. Aguarde alguns instantes.', 'erro');
-        return;
-      }
-
+      if (!window.jspdf || !window.jspdf.jsPDF) return mostrarToast('Biblioteca PDF carregando...', 'erro');
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
@@ -1145,9 +1293,7 @@
           doc.setFillColor(255, 255, 255);
           doc.circle(22, 16, 11, 'F');
           doc.addImage(headerLogo, 'PNG', 12, 6, 20, 20);
-        } catch (e) {
-          console.warn('Aviso ao embutir logo no PDF:', e);
-        }
+        } catch (e) {}
       }
 
       doc.setTextColor(253, 248, 242);
@@ -1167,7 +1313,7 @@
         formatarMoeda(p.preco),
         p.estoque ?? 0,
         formatarMoeda((Number(p.preco) || 0) * (Number(p.estoque) || 0))
-      ]) : [['Nenhum produto cadastrado no momento', '-', '-', '-', '-', '-']];
+      ]) : [['Nenhum produto cadastrado', '-', '-', '-', '-', '-']];
 
       doc.autoTable({
         startY: 46,
@@ -1194,7 +1340,7 @@
         formatarMoeda(v.valor_total),
         v.pagamento || '-',
         v.cliente || '-'
-      ]) : [['Nenhuma venda registrada até o momento', '-', '-', '-', '-', '-']];
+      ]) : [['Nenhuma venda registrada', '-', '-', '-', '-', '-']];
 
       doc.autoTable({
         startY: finalY + 4,
@@ -1208,7 +1354,20 @@
       mostrarToast('Relatório PDF gerado com sucesso!');
     }
 
-    // Inicialização da verificação de sessão
+    // Fecha o modal ao clicar fora ou com a tecla ESC
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        fecharModalProduto();
+      }
+    });
+
+    document.getElementById('modal-produto').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-produto') {
+        fecharModalProduto();
+      }
+    });
+
+    // Inicialização
     verificarSessao();
   </script>
 </body>
