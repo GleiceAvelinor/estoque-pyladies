@@ -8,6 +8,10 @@ export default async function handler(req, res) {
   const sql = neon(process.env.DATABASE_URL);
 
   try {
+    // Garante que as colunas status e perfil existam
+    await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pendente'`;
+    await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS perfil VARCHAR(20) DEFAULT 'membro'`;
+
     // Listar usuárias
     if (req.method === 'GET') {
       const usuarios = await sql`
