@@ -9,6 +9,7 @@
 
 ## 📌 Sumário
 - [Sobre o Projeto](#-sobre-o-projeto)
+- [Manual de Uso do Usuário (Guia Rápido)](MANUAL_DO_USUARIO.md)
 - [Funcionalidades Principais](#-funcionalidades-principais)
 - [Arquitetura do Sistema](#-arquitetura-do-sistema)
 - [Stack Tecnológica](#-stack-tecnológica)
