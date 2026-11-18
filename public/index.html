@@ -233,55 +233,85 @@
       <!-- ABA 2: VENDAS & CAIXA (PDV)                -->
       <!-- ========================================== -->
       <section id="aba-vendas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Coluna 1: Formulário PDV -->
+        <!-- Coluna 1: Formulário PDV & Carrinho Multi-Itens -->
         <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-cangaco-sand shadow-sm h-fit space-y-4">
           <div class="border-b border-cangaco-sand pb-3">
             <h2 class="text-base font-bold text-cangaco-brown flex items-center gap-2">
-              <span>🛒</span> Registrar Venda
+              <span>🛒</span> Registrar Venda (PDV)
             </h2>
-            <p class="text-xs text-stone-500">Operação rápida de saída no estoque</p>
+            <p class="text-xs text-stone-500">Adicione um ou mais itens antes de fechar a venda</p>
           </div>
 
-          <form id="form-venda" class="space-y-4" novalidate>
+          <!-- Bloco 1: Seleção e Adição de Itens -->
+          <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 space-y-3">
             <div>
-              <label for="venda-produto" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Produto *</label>
-              <select id="venda-produto" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm bg-cangaco-cream/40 focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+              <div class="flex justify-between items-center mb-1">
+                <label for="venda-produto" class="block text-xs font-semibold uppercase text-stone-700">Selecionar Produto</label>
+                <span id="venda-disp-badge" class="text-[11px] text-amber-900 font-bold"></span>
+              </div>
+              <select id="venda-produto" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
                 <option value="">Carregando produtos...</option>
               </select>
             </div>
 
+            <div class="flex items-end gap-2">
+              <div class="w-24">
+                <label for="venda-qtd" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Qtd</label>
+                <input type="number" id="venda-qtd" min="1" value="1" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-center focus:ring-2 focus:ring-cangaco-gold focus:outline-none font-bold">
+              </div>
+              <button type="button" onclick="adicionarItemAoCarrinho()" id="btn-add-carrinho" class="flex-1 bg-cangaco-gold hover:bg-amber-500 text-cangaco-dark font-bold text-xs py-2.5 px-3 rounded-lg transition shadow flex items-center justify-center gap-1.5 focus:ring-2 focus:ring-amber-700">
+                <span>➕</span> Adicionar ao Pedido
+              </button>
+            </div>
+          </div>
+
+          <!-- Bloco 2: Lista de Itens no Pedido (Carrinho) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-cangaco-brown flex items-center gap-1.5">
+                <span>🛍️</span> Itens no Pedido (<span id="carrinho-qtd-total">0</span>)
+              </span>
+              <button type="button" onclick="limparCarrinho()" id="btn-limpar-carrinho" class="text-[11px] text-rose-600 hover:text-rose-800 font-semibold hidden">
+                Limpar Todos
+              </button>
+            </div>
+
+            <div id="carrinho-lista" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <p id="carrinho-vazio-msg" class="text-xs text-stone-400 py-4 text-center border border-dashed border-stone-300 rounded-lg">
+                Nenhum produto adicionado.<br>Escolha um item acima e clique em "Adicionar ao Pedido".
+              </p>
+            </div>
+          </div>
+
+          <!-- Bloco 3: Fechamento da Venda -->
+          <form id="form-venda" class="space-y-3 pt-3 border-t border-cangaco-sand" novalidate>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <div class="flex justify-between items-center mb-1">
-                  <label for="venda-qtd" class="block text-xs font-semibold uppercase text-stone-700">Qtd *</label>
-                  <span id="venda-disp-badge" class="text-[11px] text-amber-800 font-bold"></span>
-                </div>
-                <input type="number" id="venda-qtd" min="1" value="1" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
-              </div>
-
-              <div>
-                <label for="venda-pagamento" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Pagamento</label>
-                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+                <label for="venda-pagamento" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Pagamento *</label>
+                <select id="venda-pagamento" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none bg-white">
                   <option value="Pix">Pix</option>
                   <option value="Dinheiro">Dinheiro</option>
                   <option value="Cartão de Crédito">Cartão de Crédito</option>
                   <option value="Cartão de Débito">Cartão de Débito</option>
                 </select>
               </div>
-            </div>
 
-            <div>
-              <label for="venda-cliente" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Cliente / Compradora (opcional)</label>
-              <input type="text" id="venda-cliente" placeholder="Ex: Mariazinha" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+              <div>
+                <label for="venda-cliente" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Cliente / Compradora</label>
+                <input type="text" id="venda-cliente" placeholder="Ex: Mariazinha" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
+              </div>
             </div>
 
             <!-- Resumo Financeiro Dinâmico -->
-            <div class="bg-stone-50 p-3.5 rounded-lg border border-stone-200 flex justify-between items-center">
-              <span class="text-xs font-medium text-stone-600">Total a Pagar:</span>
-              <span id="venda-total-preview" class="text-lg font-bold text-emerald-700">R$ 0,00</span>
+            <div class="bg-amber-50/70 p-3 rounded-lg border border-amber-200 flex justify-between items-center">
+              <div>
+                <span class="text-xs font-semibold text-stone-700 block">Total a Pagar:</span>
+                <span id="carrinho-itens-resumo" class="text-[11px] text-stone-500">0 produto(s)</span>
+              </div>
+              <span id="venda-total-preview" class="text-xl font-extrabold text-emerald-700">R$ 0,00</span>
             </div>
 
-            <button type="submit" id="btn-venda-submit" class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-bold py-2.5 rounded-lg transition shadow focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-60 disabled:cursor-not-allowed">
+            <button type="submit" id="btn-venda-submit" disabled class="w-full bg-cangaco-brown hover:bg-cangaco-dark text-white font-bold py-2.5 rounded-lg transition shadow focus:ring-2 focus:ring-offset-2 focus:ring-cangaco-gold disabled:opacity-50 disabled:cursor-not-allowed">
               Confirmar Venda e Baixar Estoque
             </button>
           </form>
@@ -823,6 +853,7 @@
       renderizarProdutos();
       renderizarVendas();
       renderizarEstoqueCritico();
+      renderizarCarrinho();
     }
 
     function renderizarKPIs() {
@@ -901,18 +932,153 @@
       select.innerHTML = options;
     }
 
-    // Monitora cálculo dinâmico da venda
-    function atualizarPrecoTotalVenda() {
-      const prodId = Number(document.getElementById('venda-produto').value);
-      const qtd = parseInt(document.getElementById('venda-qtd').value, 10) || 0;
-      const prod = produtos.find(p => p.id === prodId);
-      const preview = document.getElementById('venda-total-preview');
+    // ==========================================
+    // CARRINHO E REGISTRO MULTI-ITENS (PDV)
+    // ==========================================
+    let carrinhoVenda = [];
 
-      if (prod && qtd > 0) {
-        preview.textContent = formatarMoeda((Number(prod.preco) || 0) * qtd);
-      } else {
-        preview.textContent = 'R$ 0,00';
+    function renderizarCarrinho() {
+      const container = document.getElementById('carrinho-lista');
+      const btnSubmit = document.getElementById('btn-venda-submit');
+      const preview = document.getElementById('venda-total-preview');
+      const resumoQtd = document.getElementById('carrinho-itens-resumo');
+      const totalBadge = document.getElementById('carrinho-qtd-total');
+      const btnLimpar = document.getElementById('btn-limpar-carrinho');
+
+      if (!carrinhoVenda || carrinhoVenda.length === 0) {
+        container.innerHTML = `
+          <p id="carrinho-vazio-msg" class="text-xs text-stone-400 py-4 text-center border border-dashed border-stone-300 rounded-lg">
+            Nenhum produto adicionado.<br>Escolha um item acima e clique em "Adicionar ao Pedido".
+          </p>
+        `;
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.textContent = 'Confirmar Venda e Baixar Estoque';
+        }
+        if (preview) preview.textContent = 'R$ 0,00';
+        if (resumoQtd) resumoQtd.textContent = '0 produto(s)';
+        if (totalBadge) totalBadge.textContent = '0';
+        if (btnLimpar) btnLimpar.classList.add('hidden');
+        return;
       }
+
+      if (btnLimpar) btnLimpar.classList.remove('hidden');
+
+      const totalItens = carrinhoVenda.reduce((acc, item) => acc + item.quantidade, 0);
+      const valorTotal = carrinhoVenda.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+
+      if (totalBadge) totalBadge.textContent = totalItens;
+      if (resumoQtd) resumoQtd.textContent = `${carrinhoVenda.length} tipo(s) • ${totalItens} peça(s)`;
+      if (preview) preview.textContent = formatarMoeda(valorTotal);
+
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = `Confirmar Venda • ${formatarMoeda(valorTotal)}`;
+      }
+
+      container.innerHTML = carrinhoVenda.map((item, index) => {
+        const subtotal = item.preco * item.quantidade;
+        return `
+          <div class="bg-amber-50/50 p-2.5 rounded-lg border border-amber-200/80 flex items-center justify-between gap-2 text-xs">
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-stone-900 truncate">${escapeHTML(item.nome)}</p>
+              <p class="text-[11px] text-stone-500">
+                Tam: <span class="font-semibold text-stone-700">${escapeHTML(item.tamanho)}</span> • ${formatarMoeda(item.preco)} un.
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex items-center border border-stone-300 rounded bg-white">
+                <button type="button" onclick="alterarQtdCarrinho(${index}, -1)" title="Diminuir quantidade" class="px-2 py-0.5 text-stone-600 hover:bg-stone-100 font-bold text-xs">-</button>
+                <span class="px-2 font-bold text-stone-800 text-xs">${item.quantidade}</span>
+                <button type="button" onclick="alterarQtdCarrinho(${index}, 1)" title="Aumentar quantidade" class="px-2 py-0.5 text-stone-600 hover:bg-stone-100 font-bold text-xs">+</button>
+              </div>
+              <span class="font-bold text-emerald-800 text-xs min-w-[55px] text-right">${formatarMoeda(subtotal)}</span>
+              <button type="button" onclick="removerItemCarrinho(${index})" title="Remover este item" class="text-rose-600 hover:text-rose-800 p-1 font-bold text-base leading-none">&times;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function adicionarItemAoCarrinho() {
+      const select = document.getElementById('venda-produto');
+      const prodId = Number(select.value);
+      const qtdInput = document.getElementById('venda-qtd');
+      const qtd = parseInt(qtdInput.value, 10);
+
+      if (!prodId) {
+        return mostrarToast('Selecione um produto antes de adicionar ao pedido.', 'erro');
+      }
+      if (!qtd || isNaN(qtd) || qtd <= 0) {
+        return mostrarToast('Informe uma quantidade válida maior que zero.', 'erro');
+      }
+
+      const prod = produtos.find(p => p.id === prodId);
+      if (!prod) return mostrarToast('Produto não encontrado.', 'erro');
+
+      const estDisponivel = Number(prod.estoque) || 0;
+      if (estDisponivel <= 0) {
+        return mostrarToast('Este produto está esgotado.', 'erro');
+      }
+
+      const itemExistente = carrinhoVenda.find(item => item.produtoId === prodId);
+      const qtdAtualNoCarrinho = itemExistente ? itemExistente.quantidade : 0;
+      const novaQtdTotal = qtdAtualNoCarrinho + qtd;
+
+      if (novaQtdTotal > estDisponivel) {
+        return mostrarToast(`Estoque insuficiente. Você já possui ${qtdAtualNoCarrinho} deste item no pedido e o estoque total é ${estDisponivel} un.`, 'erro');
+      }
+
+      if (itemExistente) {
+        itemExistente.quantidade = novaQtdTotal;
+      } else {
+        carrinhoVenda.push({
+          produtoId: prod.id,
+          nome: prod.nome,
+          tamanho: prod.tamanho,
+          preco: Number(prod.preco) || 0,
+          precoCusto: Number(prod.preco_custo || 0),
+          quantidade: qtd,
+          estoqueMax: estDisponivel
+        });
+      }
+
+      qtdInput.value = 1;
+      renderizarCarrinho();
+      mostrarToast(`"${prod.nome}" adicionado ao pedido!`);
+    }
+
+    function removerItemCarrinho(index) {
+      if (index >= 0 && index < carrinhoVenda.length) {
+        carrinhoVenda.splice(index, 1);
+        renderizarCarrinho();
+      }
+    }
+
+    function alterarQtdCarrinho(index, delta) {
+      const item = carrinhoVenda[index];
+      if (!item) return;
+
+      const prod = produtos.find(p => p.id === item.produtoId);
+      const estoqueMax = prod ? Number(prod.estoque) || 0 : item.estoqueMax;
+
+      const novaQtd = item.quantidade + delta;
+      if (novaQtd <= 0) {
+        removerItemCarrinho(index);
+        return;
+      }
+      if (novaQtd > estoqueMax) {
+        mostrarToast(`Estoque máximo disponível atingido (${estoqueMax} un.).`, 'erro');
+        return;
+      }
+
+      item.quantidade = novaQtd;
+      renderizarCarrinho();
+    }
+
+    function limparCarrinho() {
+      carrinhoVenda = [];
+      renderizarCarrinho();
     }
 
     document.getElementById('venda-produto').addEventListener('change', (e) => {
@@ -932,10 +1098,7 @@
         badgeDisp.textContent = '';
         qtdInput.removeAttribute('max');
       }
-      atualizarPrecoTotalVenda();
     });
-
-    document.getElementById('venda-qtd').addEventListener('input', atualizarPrecoTotalVenda);
 
     // ==========================================
     // TABELA DE ESTOQUE E FILTROS
@@ -1140,43 +1303,53 @@
     });
 
     // ==========================================
-    // REGISTRAR VENDA
+    // REGISTRAR VENDA (FECHAMENTO DO CARRINHO)
     // ==========================================
     document.getElementById('form-venda').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const produtoId = document.getElementById('venda-produto').value;
-      const qtd = parseInt(document.getElementById('venda-qtd').value, 10);
+
+      if (!carrinhoVenda || carrinhoVenda.length === 0) {
+        return mostrarToast('Adicione pelo menos um produto ao pedido antes de confirmar.', 'erro');
+      }
+
       const pagamento = document.getElementById('venda-pagamento').value;
       const cliente = document.getElementById('venda-cliente').value.trim();
       const btn = document.getElementById('btn-venda-submit');
-
-      if (!produtoId) return mostrarToast('Selecione um produto da lista.', 'erro');
-      if (!qtd || isNaN(qtd) || qtd <= 0) return mostrarToast('Informe uma quantidade válida maior que zero.', 'erro');
 
       const textoOriginal = btn.textContent;
       btn.disabled = true;
       btn.textContent = 'Processando venda...';
 
+      const payload = {
+        itens: carrinhoVenda.map(item => ({
+          produto_id: item.produtoId,
+          quantidade: item.quantidade
+        })),
+        pagamento,
+        cliente
+      };
+
       try {
         const res = await fetch('/api/vendas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ produto_id: produtoId, quantidade: qtd, pagamento, cliente })
+          body: JSON.stringify(payload)
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Erro ao registrar venda.');
 
-        e.target.reset();
+        carrinhoVenda = [];
+        renderizarCarrinho();
+        document.getElementById('venda-cliente').value = '';
         document.getElementById('venda-qtd').value = '1';
         document.getElementById('venda-disp-badge').textContent = '';
-        document.getElementById('venda-total-preview').textContent = 'R$ 0,00';
         await carregarDados();
         mostrarToast('Venda registrada e estoque atualizado com sucesso!');
       } catch (err) {
         mostrarToast(err.message, 'erro');
       } finally {
         btn.disabled = false;
-        btn.textContent = textoOriginal;
+        renderizarCarrinho();
       }
     });
 

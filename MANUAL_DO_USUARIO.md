@@ -92,25 +92,25 @@ Exibe os produtos que estão com estoque zerado (**Esgotado**) ou abaixo de 5 un
 
 ---
 
-## 5. Aba 2: Vendas & Caixa (PDV)
+## 5. Aba 2: Vendas & Caixa (PDV Multi-Itens)
 
-Esta é a aba mais utilizada durante os eventos. Foi desenhada para ser rápida e evitar filas.
+Esta é a aba mais utilizada durante os eventos. Permite adicionar múltiplos produtos a um mesmo pedido antes de fechar o pagamento total da compradora.
 
-### 5.1 Como Registrar uma Venda Passo a Passo
-1. No campo **Produto**, selecione o item desejado no menu suspenso.
-   - *Itens esgotados aparecem desabilitados com a tag `ESGOTADO`.*
-   - Ao selecionar, o sistema exibe a quantidade disponível ao lado (ex: `Disp: 14 un.`).
-2. No campo **Quantidade**, digite quantas unidades a pessoa compradora está levando.
-   - *O sistema impede digitar um número maior do que o estoque físico disponível.*
-3. O painel calcula instantaneamente o **Total a Pagar** em verde.
-4. Selecione a **Forma de Pagamento**:
-   - `Pix`
-   - `Dinheiro`
-   - `Cartão de Crédito`
-   - `Cartão de Débito`
-5. *(Opcional)* No campo **Cliente / Compradora**, digite o nome da pessoa para controle interno.
-6. Clique no botão marrom **"Confirmar Venda e Baixar Estoque"**.
-7. O estoque do item é abatido automaticamente no banco de dados e a venda é registrada no histórico.
+### 5.1 Como Registrar uma Venda (com um ou mais itens)
+1. **Adicionar Itens ao Pedido:**
+   - Selecione o primeiro **Produto** no menu suspenso.
+     - *Itens esgotados aparecem desabilitados com a tag `ESGOTADO`.*
+     - Ao selecionar, o sistema exibe a quantidade disponível ao lado (ex: `Disp: 14 un.`).
+   - Informe a **Quantidade** desejada e clique em **`➕ Adicionar ao Pedido`**.
+   - O item será listado no quadro **🛍️ Itens no Pedido** com sua quantidade e subtotal.
+   - **Quer adicionar mais produtos na mesma compra?** Basta escolher o próximo item no menu, definir a quantidade e clicar novamente em `➕ Adicionar ao Pedido`!
+   - Você pode ajustar as quantidades (`+` / `-`) ou remover itens (`×`) diretamente na lista do pedido.
+2. **Fechamento e Pagamento:**
+   - O sistema soma automaticamente todos os itens e exibe o **Total da Venda** em destaque.
+   - Selecione a **Forma de Pagamento** (`Pix`, `Dinheiro`, `Cartão de Crédito` ou `Cartão de Débito`).
+   - *(Opcional)* No campo **Cliente / Compradora**, digite o nome da pessoa.
+   - Clique em **"Confirmar Venda e Baixar Estoque"**.
+3. O estoque de todos os produtos do pedido é abatido atomicamente no banco de dados e a transação consolidada é registrada no histórico.
 
 ### 5.2 Histórico de Vendas
 Na coluna direita, a tabela lista todas as transações realizadas com Data, Hora, Produto, Quantidade, Valor e Forma de Pagamento.

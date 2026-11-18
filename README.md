@@ -247,7 +247,7 @@ estoque-pyladies/
 
 ### Vendas (`/api/vendas`)
 - **`GET /api/vendas`**: Retorna histórico completo de vendas ordenado por data decrescente.
-- **`POST /api/vendas`**: Registra nova venda e realiza baixa atômica no estoque do produto informado (`produto_id`, `quantidade`, `pagamento`, `cliente`).
+- **`POST /api/vendas`**: Registra nova venda multi-itens (ou item único) e realiza baixa atômica no estoque de cada produto informado (`{ "itens": [{ "produto_id": 1, "quantidade": 2 }], "pagamento": "Pix", "cliente": "Maria" }`).
 
 ---
 

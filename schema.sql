@@ -32,16 +32,19 @@ ALTER TABLE produtos ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10, 2) NOT NUL
 CREATE TABLE IF NOT EXISTS vendas (
   id SERIAL PRIMARY KEY,
   produto_id INTEGER REFERENCES produtos(id) ON DELETE SET NULL,
-  produto_nome VARCHAR(255) NOT NULL,
+  produto_nome TEXT NOT NULL,
   quantidade INTEGER NOT NULL,
   valor_total NUMERIC(10, 2) NOT NULL,
   preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+  itens JSONB DEFAULT '[]',
   cliente VARCHAR(255) DEFAULT 'Não informado',
   pagamento VARCHAR(100) NOT NULL,
   data_venda TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE vendas ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE vendas ADD COLUMN IF NOT EXISTS itens JSONB DEFAULT '[]';
+ALTER TABLE vendas ALTER COLUMN produto_nome TYPE TEXT;
 
 -- Índices recomendados para otimização de consultas
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(LOWER(email));
