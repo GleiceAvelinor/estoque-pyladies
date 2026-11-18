@@ -1185,7 +1185,11 @@
       }
 
       try {
-        const res = await fetch('/api/produtos?limpar=tudo', { method: 'DELETE' });
+        const res = await fetch('/api/produtos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ acao: 'limpar_tudo' })
+        });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Erro ao limpar banco de dados.');
 

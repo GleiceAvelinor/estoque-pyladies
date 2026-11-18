@@ -17,7 +17,12 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { nome, categoria, tamanho, preco, preco_custo, estoque } = req.body || {};
+      const { acao, nome, categoria, tamanho, preco, preco_custo, estoque } = req.body || {};
+
+      if (acao === 'limpar_tudo') {
+        await sql`TRUNCATE TABLE vendas, produtos RESTART IDENTITY CASCADE`;
+        return res.status(200).json({ ok: true, message: 'Dados de produtos e vendas limpos com sucesso.' });
+      }
 
       const nomeLimpo = nome ? String(nome).trim() : '';
       const categoriaLimpa = categoria ? String(categoria).trim() : 'Outros';
