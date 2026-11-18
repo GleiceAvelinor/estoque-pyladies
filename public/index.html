@@ -208,7 +208,7 @@
                 <p class="text-xs text-stone-600 mt-0.5">Realizar baixa rápida no caixa</p>
               </button>
 
-              <button onclick="abrirModalProduto()" class="p-4 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition group">
+              <button onclick="abrirModalNovoProduto()" class="p-4 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition group">
                 <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">➕</span>
                 <p class="font-bold text-sm text-cangaco-dark">Cadastrar Novo Produto</p>
                 <p class="text-xs text-stone-600 mt-0.5">Adicionar novo item ao estoque</p>
@@ -344,7 +344,7 @@
             <button onclick="exportarCSVEstoque()" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs rounded-lg transition">
               📥 Exportar CSV
             </button>
-            <button onclick="abrirModalProduto()" class="px-4 py-2 bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold text-xs sm:text-sm rounded-lg transition shadow flex items-center gap-1.5">
+            <button onclick="abrirModalNovoProduto()" class="px-4 py-2 bg-cangaco-leather hover:bg-cangaco-brown text-white font-semibold text-xs sm:text-sm rounded-lg transition shadow flex items-center gap-1.5">
               <span>➕</span> Novo Produto
             </button>
           </div>
@@ -436,12 +436,13 @@
       <div class="bg-cangaco-dark px-6 py-4 flex items-center justify-between text-white">
         <div>
           <h3 id="modal-prod-title" class="text-base font-bold">Cadastrar Novo Produto</h3>
-          <p class="text-xs text-cangaco-sand">Adicione um novo item ao catálogo de estoque</p>
+          <p id="modal-prod-subtitle" class="text-xs text-cangaco-sand">Adicione um novo item ao catálogo de estoque</p>
         </div>
         <button onclick="fecharModalProduto()" class="text-stone-300 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
       </div>
 
       <form id="form-produto" class="p-6 space-y-4" novalidate>
+        <input type="hidden" id="prod-edit-id" value="">
         <div>
           <label for="prod-nome" class="block text-xs font-semibold uppercase text-stone-700 mb-1">Nome do Produto *</label>
           <input type="text" id="prod-nome" placeholder="Ex: Camiseta PyLadies Cangaço Tech" required class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:ring-2 focus:ring-cangaco-gold focus:outline-none">
@@ -1006,6 +1007,7 @@
               </span>
             </td>
             <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+              <button onclick="editarProduto(${p.id})" title="Editar produto" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded text-xs font-semibold transition">✏️ Editar</button>
               <button onclick="ajustarEstoque(${p.id}, 1)" title="Aumentar estoque em 1" class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded text-xs font-bold transition">+1</button>
               <button onclick="ajustarEstoque(${p.id}, -1)" title="Diminuir estoque em 1" class="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 rounded text-xs font-bold transition" ${estoque <= 0 ? 'disabled' : ''}>-1</button>
               <button onclick="excluirProduto(${p.id})" title="Excluir produto" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded text-xs font-semibold transition">Excluir</button>
@@ -1043,19 +1045,49 @@
     }
 
     // ==========================================
-    // MODAL DE CADASTRO DE PRODUTO
+    // MODAL DE CADASTRO E EDIÇÃO DE PRODUTO
     // ==========================================
     function abrirModalProduto() {
       document.getElementById('modal-produto').classList.remove('hidden');
       document.getElementById('prod-nome').focus();
     }
 
+    function abrirModalNovoProduto() {
+      document.getElementById('prod-edit-id').value = '';
+      document.getElementById('modal-prod-title').textContent = 'Cadastrar Novo Produto';
+      document.getElementById('modal-prod-subtitle').textContent = 'Adicione um novo item ao catálogo de estoque';
+      document.getElementById('btn-prod-submit').textContent = 'Cadastrar Produto';
+      document.getElementById('form-produto').reset();
+      document.getElementById('prod-estoque').value = '10';
+      document.getElementById('prod-tamanho').value = 'G';
+      document.getElementById('prod-preco-custo').value = '';
+      abrirModalProduto();
+    }
+
+    function editarProduto(id) {
+      const p = produtos.find(item => item.id === id);
+      if (!p) return;
+      document.getElementById('prod-edit-id').value = p.id;
+      document.getElementById('modal-prod-title').textContent = 'Editar Produto';
+      document.getElementById('modal-prod-subtitle').textContent = `Atualize preços, estoque e dados de "${p.nome}"`;
+      document.getElementById('btn-prod-submit').textContent = 'Salvar Alterações';
+      document.getElementById('prod-nome').value = p.nome || '';
+      document.getElementById('prod-categoria').value = p.categoria || 'Outros';
+      document.getElementById('prod-tamanho').value = p.tamanho || 'Único';
+      document.getElementById('prod-preco-custo').value = p.preco_custo !== undefined && p.preco_custo !== null ? Number(p.preco_custo) : '';
+      document.getElementById('prod-preco').value = p.preco !== undefined && p.preco !== null ? Number(p.preco) : '';
+      document.getElementById('prod-estoque').value = p.estoque ?? 0;
+      abrirModalProduto();
+    }
+
     function fecharModalProduto() {
       document.getElementById('modal-produto').classList.add('hidden');
+      document.getElementById('prod-edit-id').value = '';
     }
 
     document.getElementById('form-produto').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('prod-edit-id').value;
       const nome = document.getElementById('prod-nome').value.trim();
       const categoria = document.getElementById('prod-categoria').value;
       const tamanho = document.getElementById('prod-tamanho').value;
@@ -1078,14 +1110,19 @@
       btn.disabled = true;
       btn.textContent = 'Salvando...';
 
+      const metodo = editId ? 'PUT' : 'POST';
+      const bodyPayload = editId
+        ? { id: editId, nome, categoria, tamanho, preco, preco_custo: precoCusto, estoque }
+        : { nome, categoria, tamanho, preco, preco_custo: precoCusto, estoque };
+
       try {
         const res = await fetch('/api/produtos', {
-          method: 'POST',
+          method: metodo,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, categoria, tamanho, preco, preco_custo: precoCusto, estoque })
+          body: JSON.stringify(bodyPayload)
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar produto.');
+        if (!res.ok) throw new Error(data.error || 'Erro ao salvar produto.');
 
         e.target.reset();
         document.getElementById('prod-estoque').value = '10';
@@ -1093,7 +1130,7 @@
         document.getElementById('prod-preco-custo').value = '';
         fecharModalProduto();
         await carregarDados();
-        mostrarToast('Produto cadastrado com sucesso!');
+        mostrarToast(editId ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
       } catch (err) {
         mostrarToast(err.message, 'erro');
       } finally {

@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { id, estoque, delta, preco, preco_custo } = req.body || {};
+      const { id, nome, categoria, tamanho, estoque, delta, preco, preco_custo } = req.body || {};
       const idNum = Number(id);
 
       if (!id || isNaN(idNum)) {
@@ -73,40 +73,40 @@ export default async function handler(req, res) {
           RETURNING *
         `;
         atualizado = rows[0];
-      } else if (estoque !== undefined) {
-        const estoqueNum = Number(estoque);
-        if (isNaN(estoqueNum) || estoqueNum < 0 || !Number.isInteger(estoqueNum)) {
-          return res.status(400).json({ error: 'Estoque inválido. Deve ser um número inteiro maior ou igual a zero.' });
-        }
-        const rows = await sql`
-          UPDATE produtos 
-          SET estoque = ${estoqueNum} 
-          WHERE id = ${idNum} 
-          RETURNING *
-        `;
-        atualizado = rows[0];
-      } else if (preco !== undefined || preco_custo !== undefined) {
+      } else {
+        const nomeLimpo = nome ? String(nome).trim() : null;
+        const categoriaLimpa = categoria ? String(categoria).trim() : null;
+        const tamanhoLimpo = tamanho ? String(tamanho).trim() : null;
         const precoNum = preco !== undefined ? Number(String(preco).replace(',', '.')) : null;
         const precoCustoNum = preco_custo !== undefined ? Number(String(preco_custo).replace(',', '.')) : null;
+        const estoqueNum = estoque !== undefined ? Number(estoque) : null;
 
+        if (nome !== undefined && !nomeLimpo) {
+          return res.status(400).json({ error: 'O nome do produto não pode ficar em branco.' });
+        }
         if (precoNum !== null && (isNaN(precoNum) || precoNum < 0)) {
           return res.status(400).json({ error: 'Preço de venda informado é inválido.' });
         }
         if (precoCustoNum !== null && (isNaN(precoCustoNum) || precoCustoNum < 0)) {
           return res.status(400).json({ error: 'Preço de custo informado é inválido.' });
         }
+        if (estoqueNum !== null && (isNaN(estoqueNum) || estoqueNum < 0 || !Number.isInteger(estoqueNum))) {
+          return res.status(400).json({ error: 'Estoque informado é inválido.' });
+        }
 
         const rows = await sql`
           UPDATE produtos
           SET 
+            nome = COALESCE(${nomeLimpo}, nome),
+            categoria = COALESCE(${categoriaLimpa}, categoria),
+            tamanho = COALESCE(${tamanhoLimpo}, tamanho),
             preco = COALESCE(${precoNum}, preco),
-            preco_custo = COALESCE(${precoCustoNum}, preco_custo)
+            preco_custo = COALESCE(${precoCustoNum}, preco_custo),
+            estoque = COALESCE(${estoqueNum}, estoque)
           WHERE id = ${idNum}
           RETURNING *
         `;
         atualizado = rows[0];
-      } else {
-        return res.status(400).json({ error: 'Nenhum campo para atualização foi informado.' });
       }
 
       if (!atualizado) {

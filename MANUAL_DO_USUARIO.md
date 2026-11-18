@@ -142,8 +142,9 @@ Destinada à conferência de mercadorias, contagem de inventário e cadastro de 
 3. Clique em **Cadastrar Produto**.
 4. O item aparecerá imediatamente no estoque com o cálculo automático da **Margem de Lucro** (`+R$ X (Y%)`), além de ficar disponível para venda no PDV.
 
-### 6.3 Ajustes Rápidos de Estoque (+1 / -1)
+### 6.3 Edição e Ajustes Rápidos de Estoque
 Ao lado de cada produto na tabela:
+- Clique em **`✏️ Editar`** para alterar o nome, categoria, tamanho, Preço de Custo, Preço de Venda ou Estoque.
 - Clique em **`+1`** para adicionar uma unidade (ex: devolução ou peça encontrada).
 - Clique em **`-1`** para subtrair uma unidade (ex: peça com defeito ou brinde concedido).
 - Clique em **`Excluir`** para remover o item do catálogo *(só é permitido caso o produto não possua histórico de vendas vinculado)*.
