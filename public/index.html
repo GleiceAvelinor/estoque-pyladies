@@ -121,6 +121,23 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 py-6 space-y-6 flex-1 w-full" role="main">
+      <!-- Banner Destacado de Administradora -->
+      <section id="banner-admin" class="hidden bg-gradient-to-r from-amber-50 to-amber-100/70 border border-amber-300/80 p-4 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-xl shadow-inner">
+            👥
+          </div>
+          <div>
+            <h3 class="font-bold text-cangaco-brown text-sm">Painel de Administradora</h3>
+            <p id="texto-pendencias-admin" class="text-xs text-stone-600">Aprove novas voluntárias e controle os acessos ao estoque.</p>
+          </div>
+        </div>
+        <button onclick="abrirModalUsuarios()" class="bg-cangaco-brown hover:bg-cangaco-dark text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
+          <span>Gerenciar Usuárias</span>
+          <span id="badge-pendentes-banner" class="bg-amber-400 text-stone-900 px-1.5 py-0.2 rounded-full text-xs font-bold hidden">0</span>
+        </button>
+      </section>
+
       <!-- KPIs -->
       <section aria-label="Indicadores de Desempenho" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-cangaco-sand shadow-sm">
@@ -494,13 +511,29 @@
       }
     });
 
-    function verificarSessao() {
+    async function verificarSessao() {
       const salvo = localStorage.getItem('pyladies_user');
       if (salvo) {
         try {
-          const user = JSON.parse(salvo);
-          if (user && user.nome) {
+          let user = JSON.parse(salvo);
+          if (user && user.id) {
             iniciarApp(user);
+
+            // Revalida automaticamente o perfil mais recente no banco de dados
+            try {
+              const res = await fetch('/api/usuarios');
+              if (res.ok) {
+                const lista = await res.json();
+                const usuarioAtualizado = Array.isArray(lista) ? lista.find(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()) : null;
+                if (usuarioAtualizado && (usuarioAtualizado.perfil !== user.perfil || usuarioAtualizado.status !== user.status)) {
+                  user = { ...user, perfil: usuarioAtualizado.perfil, status: usuarioAtualizado.status };
+                  localStorage.setItem('pyladies_user', JSON.stringify(user));
+                  iniciarApp(user);
+                }
+              }
+            } catch (errSync) {
+              console.warn('Erro ao sincronizar perfil:', errSync);
+            }
           } else {
             fazerLogout();
           }
@@ -528,24 +561,27 @@
       
       const badgePerfil = document.getElementById('user-logado-badge');
       const btnGerenciar = document.getElementById('btn-gerenciar-usuarios');
+      const bannerAdmin = document.getElementById('banner-admin');
 
       if (user.perfil === 'admin') {
         badgePerfil.textContent = 'Admin';
         badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-500/20 text-cangaco-gold border border-cangaco-gold/40';
         btnGerenciar.classList.remove('hidden');
         btnGerenciar.classList.add('flex');
+        if (bannerAdmin) bannerAdmin.classList.remove('hidden');
         checarPendencias();
       } else {
         badgePerfil.textContent = 'Membro';
         badgePerfil.className = 'ml-1 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-stone-500/20 text-cangaco-sand';
         btnGerenciar.classList.add('hidden');
         btnGerenciar.classList.remove('flex');
+        if (bannerAdmin) bannerAdmin.classList.add('hidden');
       }
 
       carregarDados();
     }
 
-    // Verifica se há usuárias pendentes para notificar no badge do cabeçalho
+    // Verifica se há usuárias pendentes para notificar no badge do cabeçalho e banner
     async function checarPendencias() {
       if (!usuarioAtual || usuarioAtual.perfil !== 'admin') return;
       try {
@@ -554,11 +590,27 @@
         const lista = await res.json();
         const pendentes = lista.filter(u => u.status === 'pendente').length;
         const badge = document.getElementById('badge-pendentes');
+        const badgeBanner = document.getElementById('badge-pendentes-banner');
+        const txtPendencias = document.getElementById('texto-pendencias-admin');
+
         if (pendentes > 0) {
           badge.textContent = pendentes;
           badge.classList.remove('hidden');
+          if (badgeBanner) {
+            badgeBanner.textContent = `${pendentes} pendente${pendentes > 1 ? 's' : ''}`;
+            badgeBanner.classList.remove('hidden');
+          }
+          if (txtPendencias) {
+            txtPendencias.textContent = `Atenção: Há ${pendentes} cadastro(s) aguardando sua aprovação!`;
+            txtPendencias.className = 'text-xs text-amber-800 font-bold';
+          }
         } else {
           badge.classList.add('hidden');
+          if (badgeBanner) badgeBanner.classList.add('hidden');
+          if (txtPendencias) {
+            txtPendencias.textContent = 'Todas as voluntárias cadastradas estão autorizadas.';
+            txtPendencias.className = 'text-xs text-stone-600';
+          }
         }
       } catch (e) {
         console.warn('Erro ao verificar pendências:', e);
@@ -914,7 +966,7 @@
       }
 
       tbody.innerHTML = usuariosLista.map(u => {
-        const isSelf = usuarioAtual && usuarioAtual.id === u.id;
+        const isSelf = usuarioAtual && (usuarioAtual.id === u.id || (usuarioAtual.email && usuarioAtual.email.toLowerCase() === u.email.toLowerCase()));
         const statusBadge = u.status === 'aprovado' 
           ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Aprovada</span>'
           : u.status === 'pendente'
@@ -966,6 +1018,7 @@
 
         mostrarToast(`Usuária ${novoStatus === 'aprovado' ? 'aprovada' : 'bloqueada'} com sucesso!`);
         await carregarUsuarios();
+        checarPendencias();
       } catch (err) {
         mostrarToast(err.message, 'erro');
       }
@@ -1000,6 +1053,7 @@
 
         mostrarToast('Usuária removida com sucesso!');
         await carregarUsuarios();
+        checarPendencias();
       } catch (err) {
         mostrarToast(err.message, 'erro');
       }
